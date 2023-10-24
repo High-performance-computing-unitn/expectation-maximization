@@ -25,13 +25,13 @@ int main() {
 
 //    float inv[D][D];
 //
-    int m[D][D] = {{5, -2, 2, 7}, {1, 0, 0, 3},
-                   {-3, 1, 5, 0}, {3, -1, -9, 4}};
-    for (int i =0; i<D;i++) {
-        for (int j=0; j<D;j++){
-            covariance[0][i][j] = m[i][j];
-        }
-    }
+//    int m[D][D] = {{5, -2, 2, 7}, {1, 0, 0, 3},
+//                   {-3, 1, 5, 0}, {3, -1, -9, 4}};
+//    for (int i =0; i<D;i++) {
+//        for (int j=0; j<D;j++){
+//            covariance[0][i][j] = m[i][j];
+//        }
+//    }
 
 //    int x[D] = {47, 100, 27, 81};
 //    int u[D] = {1, 2, 3, 4};
@@ -50,7 +50,7 @@ int main() {
 //        }
 //    }
 
-    int p_val[N][K] = {0};
+    float p_val[N][K] = {0};
 
     // initialize
     for (int i = 0; i < N; i++) {
@@ -58,7 +58,8 @@ int main() {
         p_val[i][ind] = 1;
     }
 
+    m_step(examples, mean, covariance, weights, p_val);
+    e_step(examples, mean, covariance, weights, p_val);
+
     return 0;
-
-
 }
