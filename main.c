@@ -1,7 +1,8 @@
-#include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
-#include "linear_op.h"
+#include "constants.h"
+#include "e_step.h"
+#include "m_step.h"
 
 
 // change - draw from normal distribution
