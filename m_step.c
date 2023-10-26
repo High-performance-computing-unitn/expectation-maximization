@@ -1,6 +1,4 @@
-#include <math.h>
 #include "constants.h"
-#include "linear_op.h"
 
 
 void calc_sum_pij(float p_val[N][K], float res[K]) {
@@ -23,11 +21,16 @@ void calc_covariance_nom(float X[N][D], float mean[K][D], float cov[K][D][D], fl
         }
     }
 
+    float offset = 1e-6;
+
     for (int k = 0; k < K; k++) {
         for (int i = 0; i < N; i++) {
             for (int r = 0; r < D; r++) {
                 for (int c = 0; c < D; c++) {
                     cov[k][r][c] += p_val[i][k] * (X[i][r] - mean[k][r]) * (X[i][c] - mean[k][c]);
+                    if (r==c) {
+                        cov[k][r][c] += offset;
+                    }
                 }
             }
         }
