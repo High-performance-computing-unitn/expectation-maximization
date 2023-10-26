@@ -17,6 +17,7 @@ void fill_mat(float mat[N][D]) {
 int main() {
     srand(time(NULL));
     float examples[N][D] = {0};
+
     fill_mat(examples);
 
     float weights[K] =  {0};
@@ -25,7 +26,6 @@ int main() {
 
     float p_val[N][K] = {0};
 
-    // initialize
     for (int i = 0; i < N; i++) {
         int ind = rand() % K;
         p_val[i][ind] = 1;
