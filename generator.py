@@ -3,24 +3,37 @@ import matplotlib.pyplot as plt
 
 f = open("data.txt", "a")
 
-def gaussianGenerator(gaussiansNumber):
+def randomFiller(dimensions):
+    mu = [0] * dimensions #Mean of the N-dimensional distribution of length N
+    cov = [[0 for _ in range(dimensions)] for _ in range(dimensions)] #Covariance matrix of the distribution. It must be symmetric and positive-semidefinite for proper sampling. Size NxN
+   
+    for i in range(dimensions):
+        mu[i] = (round(random.uniform(0, 1000), 2))
+        for j in range(dimensions):
+            cov[i][j] = mu[i]/10
+
+    return (mu, cov)
+
+def gaussianGenerator(gaussiansNumber, dimensions):
     gaussians = []
 
-    while(len(gaussians) < int(gaussiansNumber)):
+    while(len(gaussians) < gaussiansNumber):
 
-        mu = round(random.uniform(-1000, 1000), 2)
-        gaussian = {"mu": mu, "sigma": mu/10}
+        (mu, cov) = randomFiller(dimensions)
+
+        gaussian = {"mu": mu, "cov": cov}
         gaussians.append(gaussian)
 
-    print(gaussians)
+    #print(gaussians)
     return gaussians
 
 
-def pointGenerator(dataset, mu, sigma):
-    points = random.normal(mu, sigma, (dataset["samples"], dataset["dimensions"]))
+def pointGenerator(dimensions, mu, cov):
+    points = random.multivariate_normal(mu, cov, (dimensions, dimensions, dimensions))
+    #points = random.normal(mu, sigma, (dataset["samples"], dataset["dimensions"]))
     for point in points:
         for p in point:
-            f.write(str(p) + " ")
+            f.write(str(point) + " ")
         f.write("\n")
     return points
 
@@ -29,12 +42,21 @@ def main():
     print("How many gaussians? ")
     gaussiansNumber = input()
 
-    gaussians = gaussianGenerator(gaussiansNumber)
+    print("How many dimensions? ")
+    dimensions = input()
+
+    gaussians = gaussianGenerator(int(gaussiansNumber), int(dimensions))
 
     print("Which dataset? (s // m // l)")
     datasetSize = input()
 
-    match datasetSize:
+    for gaussian in gaussians:
+        pointGenerator(int(dimensions), gaussian["mu"], gaussian["cov"])
+
+main()
+f.close()
+
+"""   match datasetSize:
         case "s":
             dataset = {"samples": 200, "dimensions": 1}
         case "m":
@@ -42,14 +64,4 @@ def main():
         case "l":
             dataset = {"samples": 1000000, "dimensions": 100}
         case _:
-            print("Invalid value")    
-
-
-    for gaussian in gaussians:
-        #data = pointGenerator(gaussian["mu"], gaussian["sigma"])
-        pointGenerator(dataset, gaussian["mu"], gaussian["sigma"])
-        #plt.hist(data, 30)
-        #plt.show()
-
-main()
-f.close()
+            print("Invalid value")     """
