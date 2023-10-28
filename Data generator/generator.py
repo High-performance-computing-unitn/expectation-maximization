@@ -49,3 +49,4 @@ def main():
         pd.DataFrame(random.multivariate_normal( gaussian["mu"], gaussian["cov"], samples)).to_csv(path, index=False, header=False, mode="a")
 
 main()
+f.close()
