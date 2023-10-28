@@ -46,7 +46,7 @@ def main():
             print("Invalid value")   
 
     for gaussian in gaussians:        
-        pd.DataFrame(random.multivariate_normal( gaussian["mu"], gaussian["cov"], samples)).to_csv(path, index=False, header=False, mode="a")
+        pd.DataFrame(random.multivariate_normal(gaussian["mu"], gaussian["cov"], samples)).to_csv(path, index=False, header=False, mode="a")
 
 main()
 f.close()
