@@ -2,7 +2,7 @@ from numpy import random
 import numpy as np
 import pandas as pd
 
-f = open("Data generator/GaussiansInformations.txt", "a")
+f = open("../Data generator/GaussiansInformations.txt", "w")
 
 def gaussianGenerator(gaussiansNumber, dimensions):
     gaussians = []
@@ -35,15 +35,19 @@ def main():
     match datasetSize:
         case "s":
             samples = 200
-            path = "Data generator/smallDataset.csv"
+            path = "../Data generator/smallDataset.csv"
         case "m":
             samples = 10000
-            path = "Data generator/mediumDataset.csv"
+            path = "../Data generator/mediumDataset.csv"
         case "l":
             samples = 5000000
-            path = "Data generator/bigDataset.csv"
+            path = "../Data generator/bigDataset.csv"
         case _:
             print("Invalid value")   
+
+    csvFile = open(path, "w")
+    csvFile.write(str(gaussiansNumber) + "\n")
+    csvFile.close()
 
     for gaussian in gaussians:        
         pd.DataFrame(random.multivariate_normal(gaussian["mu"], gaussian["cov"], samples)).to_csv(path, index=False, header=False, mode="a")

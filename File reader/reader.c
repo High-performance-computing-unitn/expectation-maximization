@@ -39,7 +39,7 @@ int main()
 
 	// matrix of the points
 	double dataset[N][D];
-
+	
 	// fills the matrix with the values of each element in each row converting it to double
 	for (int row = 0; row < N; row++)
 	{
