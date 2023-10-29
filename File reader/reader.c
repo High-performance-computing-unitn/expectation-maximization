@@ -4,6 +4,9 @@
 #include "file.h"
 #include "../constants.h"
 
+int D; // dimension of a feature
+int N; // number of training examples
+
 int getDimensions(char *row, const char delim)
 {
 	// starts from one because it counts commas, not elements
@@ -29,42 +32,43 @@ int main()
 	char *rows[MAX_LEN];
 
 	// number of rows aka samples
-	int samples = readFile(rows);
+	N = readFile(rows);
 
 	// number of dimensions of each point
-	int dimensions = getDimensions(rows[0], ',');
+	D = getDimensions(rows[0], ',');
 
 	// matrix of the points
-	double dataset[samples][dimensions];
-
-	// delimiter of each element
-	char delim[] = ",";
+	double dataset[N][D];
 
 	// fills the matrix with the values of each element in each row converting it to double
-	for (int row = 0; row < samples; row++)
+	for (int row = 0; row < N; row++)
 	{
 		int col = 0;
-		char *ptr = strtok(rows[row], delim);
+		// pointer to the first element
+		char *ptr = strtok(rows[row], ",");
 		while (ptr != NULL)
 		{
-			if (ptr != delim)
+			if (ptr != ",")
 			{
+				// convert element to double and store it in the matrix
 				dataset[row][col] = strtod(ptr, NULL);
-				ptr = strtok(NULL, delim);
+				ptr = strtok(NULL, ",");
 				col++;
 			}
 		}
 	}
 
+	return 0;
+}
+
+/*
 	// print the matrix
-	for (int i = 0; i < samples; i++)
+	for (int i = 0; i < N; i++)
 	{
-		for (int j = 0; j < dimensions; j++)
+		for (int j = 0; j < D; j++)
 		{
 			printf("%f ", dataset[i][j]);
 		}
 		printf("\n");
 	}
-
-	return 0;
-}
+*/
