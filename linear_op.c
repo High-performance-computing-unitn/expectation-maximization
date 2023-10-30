@@ -104,6 +104,10 @@ void inverse(float A[D][D], float inverse[D][D], float* det) // Function to calc
 }
 
 
+/*
+    Function that performs matrix vector multiplication
+    and stores the result in the res vector passed as an argument.
+*/
 void matmul(float mat[D][D], float vec[D], float res[D]) {
     for (int i = 0; i < D; i++) {
         res[i] = 0;
@@ -114,6 +118,10 @@ void matmul(float mat[D][D], float vec[D], float res[D]) {
 }
 
 
+/*
+    Function that calculates the dot product between two vectors
+    and returns the results.
+*/
 float dotProduct(float a[D], float b[D]) {
     float result = 0.0;
     for (int i = 0; i < D; i++) {
@@ -123,6 +131,9 @@ float dotProduct(float a[D], float b[D]) {
 }
 
 
+/*
+    Function that performs z-score normalization on the training examples.
+*/
 void standardize(float data[N][D]) {
     // Calculate the mean for each dimension
     float mean[D];
