@@ -2,23 +2,16 @@
 #include <stdlib.h>
 #include "constants.h"
 #include "em_algorithm.h"
-
-
-// change - draw from normal distribution
-void fill_mat(float mat[N][D]) {
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < D; j++) {
-            mat[i][j] = (rand() % 10 + 1) * 0.1;
-        }
-    }
-}
+#include "linear_op.h"
+#include "File reader/reader.c"
 
 
 int main() {
     srand(time(NULL));
 
     float examples[N][D] = {0};
-    fill_mat(examples);
+    fill_matrix(examples);
+    standardize(examples);
 
     float weights[K] = {0};
     float mean[K][D] = {0};

@@ -4,8 +4,8 @@
 #include "file.h"
 #include "../constants.h"
 
-int D; // dimension of a feature
-int N; // number of training examples
+//int D; // dimension of a feature
+//int N; // number of training examples
 
 int getDimensions(char *row, const char delim)
 {
@@ -26,40 +26,63 @@ int getDimensions(char *row, const char delim)
 	return dimensions;
 }
 
-int main()
-{
-	// contains the rows of the csv file
-	char *rows[MAX_LEN];
 
-	// number of rows aka samples
-	N = readFile(rows);
-
-	// number of dimensions of each point
-	D = getDimensions(rows[0], ',');
-
-	// matrix of the points
-	double dataset[N][D];
-	
-	// fills the matrix with the values of each element in each row converting it to double
-	for (int row = 0; row < N; row++)
-	{
-		int col = 0;
-		// pointer to the first element
-		char *ptr = strtok(rows[row], ",");
-		while (ptr != NULL)
-		{
-			if (ptr != ",")
-			{
-				// convert element to double and store it in the matrix
-				dataset[row][col] = strtod(ptr, NULL);
-				ptr = strtok(NULL, ",");
-				col++;
-			}
-		}
-	}
-
-	return 0;
+void fill_matrix(float mat[N][D]) {
+    char *rows[MAX_LEN];
+    int n = readFile(rows);
+    for (int row = 0; row < N; row++)
+    {
+        int col = 0;
+        // pointer to the first element
+        char *ptr = strtok(rows[row], ",");
+        while (ptr != NULL)
+        {
+            if (ptr != ",")
+            {
+                // convert element to double and store it in the matrix
+                mat[row][col] = strtof(ptr, NULL);
+                ptr = strtok(NULL, ",");
+                col++;
+            }
+        }
+    }
 }
+
+
+//int main()
+//{
+//	// contains the rows of the csv file
+//	char *rows[MAX_LEN];
+//
+//	// number of rows aka samples
+//	N = readFile(rows);
+//
+//	// number of dimensions of each point
+//	D = getDimensions(rows[0], ',');
+//
+//	// matrix of the points
+//	double dataset[N][D];
+//
+//	// fills the matrix with the values of each element in each row converting it to double
+//	for (int row = 0; row < N; row++)
+//	{
+//		int col = 0;
+//		// pointer to the first element
+//		char *ptr = strtok(rows[row], ",");
+//		while (ptr != NULL)
+//		{
+//			if (ptr != ",")
+//			{
+//				// convert element to double and store it in the matrix
+//				dataset[row][col] = strtod(ptr, NULL);
+//				ptr = strtok(NULL, ",");
+//				col++;
+//			}
+//		}
+//	}
+//
+//	return 0;
+//}
 
 /*
 	// print the matrix

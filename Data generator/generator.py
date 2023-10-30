@@ -9,7 +9,7 @@ def gaussianGenerator(gaussiansNumber, dimensions):
 
     while(len(gaussians) < gaussiansNumber):
 
-        mu = np.random.randint(-1e5, 1e5, dimensions)
+        mu = np.random.randint(-10, 10, dimensions)
         A = np.random.rand(dimensions, dimensions)
         cov = np.dot(A, A.transpose())
 

@@ -15,4 +15,6 @@ void matmul(float mat[D][D], float vec[D], float res[D]);
 
 float dotProduct(float a[D], float b[D]);
 
+void standardize(float data[N][D]);
+
 #endif //EM_PROJECT_LINEAR_OP_H

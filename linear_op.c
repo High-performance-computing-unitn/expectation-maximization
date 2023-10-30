@@ -3,6 +3,7 @@
       * https://www.geeksforgeeks.org/adjoint-inverse-matrix/
 */
 
+#include <math.h>
 #include "constants.h"
 
 
@@ -119,4 +120,34 @@ float dotProduct(float a[D], float b[D]) {
         result += a[i] * b[i];
     }
     return result;
+}
+
+
+void standardize(float data[N][D]) {
+    // Calculate the mean for each dimension
+    float mean[D];
+    for (int j = 0; j < D; j++) {
+        mean[j] = 0.0;
+        for (int i = 0; i < N; i++) {
+            mean[j] += data[i][j];
+        }
+        mean[j] /= N;
+    }
+
+    // Calculate the standard deviation for each dimension
+    float stdDev[D];
+    for (int j = 0; j < D; j++) {
+        stdDev[j] = 0.0;
+        for (int i = 0; i < N; i++) {
+            stdDev[j] += pow(data[i][j] - mean[j], 2);
+        }
+        stdDev[j] = sqrt(stdDev[j] / (N - 1));
+    }
+
+    // Perform standardization
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < D; j++) {
+            data[i][j] = (data[i][j] - mean[j]) / stdDev[j];
+        }
+    }
 }

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "../constants.h"
 
-int K; // number of Gaussians
+//int K; // number of Gaussians
 
 int readFile(char *rows[MAX_LEN])
 {
@@ -17,7 +17,7 @@ int readFile(char *rows[MAX_LEN])
         // get number of gaussians from the first line
         if (fgets(line, 1024, file))
         {
-            K = atoi(strdup(line));
+//            K = atoi(strdup(line));
         }
 
         // get all the other lines of the dataset
