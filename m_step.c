@@ -6,10 +6,10 @@
     of assignment to this cluster.
     Stores the result in res vector passed as a parameter.
 */
-void calc_sum_pij(float p_val[N][K], float res[K]) {
+void calc_sum_pij(float p_val[N][K], float res[K], int rows_per_process) {
     for (int k = 0; k < K; k++) { // iterate over clusters
         float s = 0;
-        for (int i = 0; i < N; i++) { // iterate over training examples
+        for (int i = 0; i < rows_per_process; i++) { // iterate over training examples
             s += p_val[i][k]; // add probability of assignment of example 'i' to cluster 'k'
         }
         res[k] = s;
@@ -110,7 +110,7 @@ void m_step_weights(float sum_pij[K], float weights[K]) {
 
 void m_step(float X[N][D], float mean[K][D], float cov[K][D][D], float weights[K], float p_val[N][K]) {
     float sum_pij[K];
-    calc_sum_pij(p_val, sum_pij);
+    calc_sum_pij(p_val, sum_pij, N);
 
     // update mean
     float mean_num[K][D];

@@ -4,6 +4,6 @@
 #include "constants.h"
 
 // run expectation step
-void e_step(float X[N][D], float mean[K][D], float cov[K][D][D], float weights[K], float p_val[N][K]);
+void e_step(float X[N][D], float mean[K][D], float cov[K][D][D], float weights[K], float p_val[N][K], int row_per_process);
 
 #endif //EM_PROJECT_E_STEP_H

@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "constants.h"
 #include "linear_op.h"
@@ -70,8 +71,8 @@ void reset_mean(float mean[D]) {
     Calculates the soft cluster assignment of each training example.
     Stores the results in the p_val matrix passed as an argument.
 */
-void e_step(float X[N][D], float mean[K][D], float cov[K][D][D], float weights[K], float p_val[N][K]) {
-    for (int i = 0; i < N; i++) { // iterate over the training examples
+void e_step(float X[N][D], float mean[K][D], float cov[K][D][D], float weights[K], float p_val[N][K], int row_per_process) {
+    for (int i = 0; i < row_per_process; i++) { // iterate over the training examples
         float p_x = 0.; // the sum of pdf of all clusters
         float gaussians[K]; // store the result of gaussian pdf to avoid computing it twice
         for (int j = 0; j < K; j++) { // iterate over clusters

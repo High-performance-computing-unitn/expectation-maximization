@@ -7,6 +7,7 @@
 #include "em_algorithm.h"
 #include "linear_op.h"
 #include "e_step.h"
+#include "m_step.h"
 #include "File reader/reader.h"
 
 
@@ -39,34 +40,34 @@ int main() {
 
     // allocate memory for local matrix values
     float local_examples[row_per_process][D];
+    float local_p_val[row_per_process][K];
 
     // scatter matrix values to processes
-    MPI_Scatter(examples, el_per_process, MPI_FLOAT, local_examples, el_per_process, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Scatter(*examples, el_per_process, MPI_FLOAT, *local_examples, el_per_process, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
     // broadcast mean, covariance, weights to all processes
     MPI_Bcast(mean, K*D, MPI_FLOAT, 0, MPI_COMM_WORLD);
     MPI_Bcast(covariance, K*D*D, MPI_FLOAT, 0, MPI_COMM_WORLD);
     MPI_Bcast(weights, K, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
-    float local_p_val[row_per_process][K];
-
+    // E STEP
     // each process computes e_step on its local dataset
-    e_step(local_examples, mean, covariance, weights, local_p_val);
+    e_step(local_examples, mean, covariance, weights, local_p_val, row_per_process);
 
+    // M STEP
+    // each process computes sum pi
+    float local_sum_pi[K];
+    calc_sum_pij(local_p_val, local_sum_pi, row_per_process);
 
-//    if (my_rank == 0) {
-//        for (int i = 0; i < row_per_process; i++) {
-//            for (int j = 0; j < D; j++) {
-//                printf("%f ", local_examples[i][j]);
-//            }
-//            printf("\n");
-//        }
-//    }
-//    float p_val[N][K] = {0};
-//
-//    initialize(mean, covariance, weights);
-//
-//    em_train(50, examples, mean, covariance, weights, p_val);
+    // collect sum from all processes and distribute result
+    float sum_pi[K];
+    MPI_Allreduce(local_sum_pi, sum_pi, K, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+
+    if (my_rank == 0) {
+        for (int i = 0; i < K; i++) {
+            printf("%f ", sum_pi[i]);
+        }
+    }
 
     MPI_Finalize();
     return 0;
