@@ -1,29 +1,34 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include "file.h"
+#include <stdlib.h>
 #include "../constants.h"
 
-//int D; // dimension of a feature
-//int N; // number of training examples
-
-int getDimensions(char *row, const char delim)
+int readFile(char *rows[MAX_LEN])
 {
-	// starts from one because it counts commas, not elements
-	int dimensions = 1;
-	char *tmp = row;
-	char *last_comma = 0;
+    FILE *file = fopen(filePath, "r");
 
-	while (*tmp)
-	{
-		if (delim == *tmp)
-		{
-			dimensions++;
-			last_comma = tmp;
-		}
-		tmp++;
-	}
-	return dimensions;
+    if (file != NULL)
+    {
+        int rowN = 0;
+        char line[1024];
+
+        // get number of gaussians from the first line
+        if (fgets(line, 1024, file))
+        {
+//            K = atoi(strdup(line));
+        }
+
+        // get all the other lines of the dataset
+        while (fgets(line, 1024, file))
+        {
+            rows[rowN] = strdup(line);
+            rowN++;
+        }
+
+        fclose(file);
+        return rowN;
+    }
+    return 0;
 }
 
 
@@ -48,6 +53,25 @@ void fill_matrix(float mat[N][D]) {
     }
 }
 
+
+//int getDimensions(char *row, const char delim)
+//{
+//    // starts from one because it counts commas, not elements
+//    int dimensions = 1;
+//    char *tmp = row;
+//    char *last_comma = 0;
+//
+//    while (*tmp)
+//    {
+//        if (delim == *tmp)
+//        {
+//            dimensions++;
+//            last_comma = tmp;
+//        }
+//        tmp++;
+//    }
+//    return dimensions;
+//}
 
 //int main()
 //{
@@ -83,15 +107,3 @@ void fill_matrix(float mat[N][D]) {
 //
 //	return 0;
 //}
-
-/*
-	// print the matrix
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = 0; j < D; j++)
-		{
-			printf("%f ", dataset[i][j]);
-		}
-		printf("\n");
-	}
-*/
