@@ -2,7 +2,7 @@
 
 
 /*
-    For each cluster if calculates the sum of probabilities
+    For each cluster it calculates the sum of probabilities
     of assignment to this cluster.
     Stores the result in res vector passed as a parameter.
 */
@@ -18,7 +18,7 @@ void calc_sum_pij(float p_val[N][K], float res[K]) {
 
 
 /*
-    Calculate the numinator part of covariance matrix formula.
+    Calculate the numerator part of covariance matrix formula.
 */
 void calc_covariance_num(float X[N][D], float mean[K][D], float cov[K][D][D], float p_val[N][K]) {
     // erase previous values of the covariance matrix for each cluster k
@@ -66,7 +66,7 @@ void m_step_covariance(float cov[K][D][D], float sum_pij[K]) {
 
 
 /*
-    Calculate the numinator part of the mean formula.
+    Calculate the numerator part of the mean formula.
 */
 void calc_mean_num(float X[N][D], float p_val[N][K], float res[K][D]) {
     for (int k = 0; k < K; k++) { // iterate over clusters
