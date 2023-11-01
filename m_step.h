@@ -17,4 +17,6 @@ void calc_covariance_num(float X[N][D], float mean[K][D], float cov[K][D][D],
 
 void m_step_covariance(float cov[K][D][D], float cov_num[K][D][D], float sum_pij[K]);
 
+void m_step_weights(float sum_pij[K], float weights[K]);
+
 #endif //EM_PROJECT_M_STEP_H

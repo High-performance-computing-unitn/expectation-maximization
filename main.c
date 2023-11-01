@@ -113,7 +113,14 @@ int main() {
     // broadcast cov values to all processes
     MPI_Bcast(covariance, K*D*D, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
+    // calc weights
 
+    // process 0 updates weights
+    if (my_rank == 0) {
+        m_step_weights(sum_pi, weights);
+    }
+    // broadcast cov values to all processes
+    MPI_Bcast(weights, K, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
     MPI_Finalize();
     return 0;
