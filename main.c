@@ -87,6 +87,32 @@ int main() {
     // broadcast mean values to all processes
     MPI_Bcast(mean, K*D, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
+    //calc covariance
+    float local_cov_num[K][D][D];
+    calc_covariance_num(local_examples, mean, local_cov_num, local_p_val, row_per_process);
+
+    // calculate sum across all processes and send result to process 0
+    float total_cov_num[K][D][D];
+    MPI_Reduce(local_cov_num, total_cov_num, K*D*D, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    // update cov values
+    if (my_rank == 0) {
+        m_step_covariance(covariance, total_cov_num, sum_pi);
+
+//        for (int i = 0; i < K; i++) {
+//            for (int d = 0; d < D; d++) {
+//                for (int r = 0; r < D; r++) {
+//                    printf("%f ", covariance[i][d][r]);
+//                }
+//                printf("\n");
+//            }
+//            printf("\n");
+//        }
+    }
+
+    // broadcast cov values to all processes
+    MPI_Bcast(covariance, K*D*D, MPI_FLOAT, 0, MPI_COMM_WORLD);
+
 
 
     MPI_Finalize();

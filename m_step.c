@@ -54,11 +54,11 @@ void calc_covariance_num(float X[N][D], float mean[K][D], float cov[K][D][D],
 /*
     Function that updates the values of the covariance matrix for each cluster.
 */
-void m_step_covariance(float cov[K][D][D], float sum_pij[K]) {
+void m_step_covariance(float cov[K][D][D], float cov_num[K][D][D], float sum_pij[K]) {
     for (int k = 0; k < K; k++) { // iterate over clusters
         for (int r = 0; r < D; r++) { // iterate over dimensions
             for (int c = 0; c < D; c++) {
-                cov[k][r][c] = cov[k][r][c] / sum_pij[k];
+                cov[k][r][c] = cov_num[k][r][c] / sum_pij[k];
             }
         }
     }
@@ -120,7 +120,7 @@ void m_step(float X[N][D], float mean[K][D], float cov[K][D][D], float weights[K
 
     // update covariance
     calc_covariance_num(X, mean, cov, p_val, N);
-    m_step_covariance(cov, sum_pij);
+    m_step_covariance(cov, cov, sum_pij);
 
     // update weights
     m_step_weights(sum_pij, weights);
