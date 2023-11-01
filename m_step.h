@@ -19,4 +19,7 @@ void m_step_covariance(float cov[K][D][D], float cov_num[K][D][D], float sum_pij
 
 void m_step_weights(float sum_pij[K], float weights[K]);
 
+void m_step_parallel(float local_p_val[N][K], float local_examples[N][D], float mean[K][D],
+                     float cov[K][D][D], float weights[K], int my_rank, int row_per_process);
+
 #endif //EM_PROJECT_M_STEP_H

@@ -1,8 +1,12 @@
 #include <stdlib.h>
+#include <mpi.h>
+#include <stdio.h>
 
 #include "constants.h"
 #include "m_step.h"
 #include "e_step.h"
+#include "linear_op.h"
+#include "File reader/reader.h"
 
 
 /*
@@ -70,4 +74,58 @@ void initialize(float mean[K][D], float cov[K][D][D], float weights[K]) {
     init_mean(mean);
     init_cov(cov);
     init_weights(weights);
+}
+
+
+void initialize_parallel(float X[N][D], float mean[K][D], float cov[K][D][D], float weights[K], int my_rank) {
+    if (my_rank == 0) {
+        fill_matrix(X);
+        standardize(X);
+        initialize(mean, cov, weights);
+    }
+}
+
+
+void divide_matrix_and_dist(float X[N][D], float local_examples[N][D], float mean[K][D],
+                            float cov[K][D][D], float weights[K], int row_per_process) {
+    const int el_per_process = row_per_process * D;
+
+    // scatter matrix values to processes
+    MPI_Scatter(X, el_per_process, MPI_FLOAT, local_examples, el_per_process, MPI_FLOAT, 0, MPI_COMM_WORLD);
+
+    // broadcast mean, covariance, weights to all processes
+    MPI_Bcast(mean, K*D, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(cov, K*D*D, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(weights, K, MPI_FLOAT, 0, MPI_COMM_WORLD);
+}
+
+
+void em_parallel(int n_iter, float X[N][D], float mean[K][D], float cov[K][D][D],
+                 float weights[K], float p_val[N][K], int my_rank, int row_per_process) {
+
+    initialize_parallel(X, mean, cov, weights, my_rank);
+
+    // allocate memory for local matrix values
+    float local_examples[row_per_process][D];
+    divide_matrix_and_dist(X, local_examples, mean, cov, weights, row_per_process);
+
+    float local_p_val[row_per_process][K];
+
+    for (int i = 0; i < n_iter; i++) {
+        // E STEP
+        // each process computes e_step on its local dataset
+        e_step(local_examples, mean, cov, weights, local_p_val, row_per_process);
+
+        m_step_parallel(local_p_val, local_examples, mean, cov, weights, my_rank, row_per_process);
+    }
+
+    // TODO gather p_val
+    if (my_rank == 2) {
+        for (int i = 0; i < row_per_process; i++) {
+            for (int d = 0; d < K; d++) {
+                printf("%f ", local_p_val[i][d]);
+            }
+            printf("\n");
+        }
+    }
 }

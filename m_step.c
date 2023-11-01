@@ -1,3 +1,5 @@
+#include <mpi.h>
+
 #include "constants.h"
 
 
@@ -124,4 +126,97 @@ void m_step(float X[N][D], float mean[K][D], float cov[K][D][D], float weights[K
 
     // update weights
     m_step_weights(sum_pij, weights);
+}
+
+void parallel_sum_pij(float local_p_val[N][K], float sum_pi[K], int row_per_process) {
+    // each process computes sum pi
+    float local_sum_pi[K];
+    calc_sum_pij(local_p_val, local_sum_pi, row_per_process);
+
+    // collect sum from all processes and distribute result
+    MPI_Reduce(local_sum_pi, sum_pi, K, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+}
+
+
+void parallel_mean(float local_examples[N][D], float local_p_val[N][K], float sum_pi[K],
+                   float mean[K][D], int my_rank, int row_per_process) {
+    // each process calculate mean numerator of its local examples
+    float local_mean_num[K][D];
+    calc_mean_num(local_examples, local_p_val, local_mean_num, row_per_process);
+
+    // calculate sum across all processes and send result to process 0
+    float total_mean_num[K][D];
+    MPI_Reduce(local_mean_num, total_mean_num, K*D, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    // update mean values
+    if (my_rank == 0) {
+        m_step_mean(mean, total_mean_num, sum_pi);
+
+//        for (int i = 0; i < K; i++) {
+//            for (int d = 0; d < D; d++) {
+//                printf("%f ", mean[i][d]);
+//            }
+//            printf("\n");
+//        }
+    }
+
+    // broadcast mean values to all processes
+    MPI_Bcast(mean, K*D, MPI_FLOAT, 0, MPI_COMM_WORLD);
+}
+
+
+void parallel_cov(float local_examples[N][D], float local_p_val[N][K], float mean[K][D],
+                  float sum_pi[K], float cov[K][D][D], int my_rank, int row_per_process) {
+    float local_cov_num[K][D][D];
+    calc_covariance_num(local_examples, mean, local_cov_num, local_p_val, row_per_process);
+
+    // calculate sum across all processes and send result to process 0
+    float total_cov_num[K][D][D];
+    MPI_Reduce(local_cov_num, total_cov_num, K*D*D, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    // update cov values
+    if (my_rank == 0) {
+        m_step_covariance(cov, total_cov_num, sum_pi);
+
+//        for (int i = 0; i < K; i++) {
+//            for (int d = 0; d < D; d++) {
+//                for (int r = 0; r < D; r++) {
+//                    printf("%f ", covariance[i][d][r]);
+//                }
+//                printf("\n");
+//            }
+//            printf("\n");
+//        }
+    }
+
+    // broadcast cov values to all processes
+    MPI_Bcast(cov, K*D*D, MPI_FLOAT, 0, MPI_COMM_WORLD);
+}
+
+
+void parallel_weights(float sum_pi[K], float weights[K], int my_rank) {
+    // process 0 updates weights
+    if (my_rank == 0) {
+        m_step_weights(sum_pi, weights);
+    }
+
+    // broadcast cov values to all processes
+    MPI_Bcast(weights, K, MPI_FLOAT, 0, MPI_COMM_WORLD);
+}
+
+
+void m_step_parallel(float local_p_val[N][K], float local_examples[N][D], float mean[K][D],
+                     float cov[K][D][D], float weights[K], int my_rank, int row_per_process) {
+    // M STEP
+    float sum_pi[K];
+    parallel_sum_pij(local_p_val, sum_pi, row_per_process);
+
+    //calc mean
+    parallel_mean(local_examples, local_p_val, sum_pi, mean, my_rank, row_per_process);
+
+    //calc covariance
+    parallel_cov(local_examples, local_p_val, mean, sum_pi, cov, my_rank, row_per_process);
+
+    // calc weights
+    parallel_weights(sum_pi, weights, my_rank);
 }
