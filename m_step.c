@@ -20,7 +20,8 @@ void calc_sum_pij(float p_val[N][K], float res[K], int rows_per_process) {
 /*
     Calculate the numerator part of covariance matrix formula.
 */
-void calc_covariance_num(float X[N][D], float mean[K][D], float cov[K][D][D], float p_val[N][K]) {
+void calc_covariance_num(float X[N][D], float mean[K][D], float cov[K][D][D],
+                         float p_val[N][K], int rows_per_process) {
     // erase previous values of the covariance matrix for each cluster k
     for (int k = 0; k < K; k++) {
         for (int c = 0; c < D; c++) {
@@ -33,7 +34,7 @@ void calc_covariance_num(float X[N][D], float mean[K][D], float cov[K][D][D], fl
     float offset = 1e-6;
 
     for (int k = 0; k < K; k++) { // iterate over clusters
-        for (int i = 0; i < N; i++) { // iterate over training examples
+        for (int i = 0; i < rows_per_process; i++) { // iterate over training examples
             for (int r = 0; r < D; r++) { // iterate over row dimension
                 for (int c = 0; c < D; c++) { // iterate over column dimension
 
@@ -68,9 +69,9 @@ void m_step_covariance(float cov[K][D][D], float sum_pij[K]) {
 /*
     Calculate the numerator part of the mean formula.
 */
-void calc_mean_num(float X[N][D], float p_val[N][K], float res[K][D]) {
+void calc_mean_num(float X[N][D], float p_val[N][K], float res[K][D], int rows_per_process) {
     for (int k = 0; k < K; k++) { // iterate over clusters
-        for (int i = 0; i < N; i++) { // iterate over training examples
+        for (int i = 0; i < rows_per_process; i++) { // iterate over training examples
             for (int j = 0; j < D; j ++) { // iterate over dimensions
                 res[k][j] += p_val[i][k] * X[i][j];
             }
@@ -114,11 +115,11 @@ void m_step(float X[N][D], float mean[K][D], float cov[K][D][D], float weights[K
 
     // update mean
     float mean_num[K][D];
-    calc_mean_num(X, p_val, mean_num);
+    calc_mean_num(X, p_val, mean_num, N);
     m_step_mean(mean, mean_num, sum_pij);
 
     // update covariance
-    calc_covariance_num(X, mean, cov, p_val);
+    calc_covariance_num(X, mean, cov, p_val, N);
     m_step_covariance(cov, sum_pij);
 
     // update weights

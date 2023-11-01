@@ -61,13 +61,33 @@ int main() {
 
     // collect sum from all processes and distribute result
     float sum_pi[K];
-    MPI_Allreduce(local_sum_pi, sum_pi, K, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Reduce(local_sum_pi, sum_pi, K, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
 
+    //calc mean
+    // each process calculate mean numerator of its local examples
+    float local_mean_num[K][D];
+    calc_mean_num(local_examples, local_p_val, local_mean_num, row_per_process);
+
+    // calculate sum across all processes and send result to process 0
+    float total_mean_num[K][D];
+    MPI_Reduce(local_mean_num, total_mean_num, K*D, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    // update mean values
     if (my_rank == 0) {
-        for (int i = 0; i < K; i++) {
-            printf("%f ", sum_pi[i]);
-        }
+        m_step_mean(mean, total_mean_num, sum_pi);
+
+//        for (int i = 0; i < K; i++) {
+//            for (int d = 0; d < D; d++) {
+//                printf("%f ", mean[i][d]);
+//            }
+//            printf("\n");
+//        }
     }
+
+    // broadcast mean values to all processes
+    MPI_Bcast(mean, K*D, MPI_FLOAT, 0, MPI_COMM_WORLD);
+
+
 
     MPI_Finalize();
     return 0;
