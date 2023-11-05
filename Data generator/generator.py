@@ -2,7 +2,7 @@ from numpy import random
 import numpy as np
 import pandas as pd
 
-f = open("../Data generator/GaussiansInformations.txt", "w")
+f = open("./Data generator/GaussiansInformations.txt", "w")
 
 def gaussianGenerator(gaussiansNumber, dimensions):
     gaussians = []
@@ -34,14 +34,14 @@ def main():
 
     match datasetSize:
         case "s":
-            samples = 200
-            path = "../Data generator/smallDataset.csv"
+            samples = 200 #25000
+            path = "./Data generator/smallDataset.csv"
         case "m":
-            samples = 10000
-            path = "../Data generator/mediumDataset.csv"
+            samples = 50000
+            path = "./Data generator/mediumDataset.csv"
         case "l":
-            samples = 5000000
-            path = "../Data generator/bigDataset.csv"
+            samples = 1000000
+            path = "./Data generator/bigDataset.csv"
         case _:
             print("Invalid value")   
 
