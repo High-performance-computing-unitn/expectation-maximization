@@ -34,7 +34,7 @@ def main():
 
     match datasetSize:
         case "s":
-            samples = 200 #25000
+            samples = 2500 
             path = "./Data generator/smallDataset.csv"
         case "m":
             samples = 50000
