@@ -1,4 +1,4 @@
-#ifndef EM_PROJECT_EM_ALGORITHM_PARELLEL
+#ifndef EM_PROJECT_EM_ALGORITHM_PARALLEL
 #define EM_PROJECT_EM_ALGORITHM_PARALLEL
 
 // initialize initial values of mean, covariance and weights
