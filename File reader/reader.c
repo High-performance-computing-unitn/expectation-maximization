@@ -32,7 +32,7 @@ int readFile(char *rows[MAX_LEN])
 }
 
 
-void fill_matrix(float mat[N][D]) {
+void fill_matrix(float* mat, int N, int D) {
     char *rows[MAX_LEN];
     int n = readFile(rows);
     for (int row = 0; row < N; row++)
@@ -45,14 +45,13 @@ void fill_matrix(float mat[N][D]) {
             if (ptr != ",")
             {
                 // convert element to double and store it in the matrix
-                mat[row][col] = strtof(ptr, NULL);
+                mat[row * D + col] = strtof(ptr, NULL);
                 ptr = strtok(NULL, ",");
                 col++;
             }
         }
     }
 }
-
 
 //int getDimensions(char *row, const char delim)
 //{
