@@ -22,16 +22,26 @@ int main() {
 
     srand(time(NULL));
 
-    float examples[N][D];
+    int D = 5;
+    int K = 4;
+    int N = 300;
 
-    float weights[K];
-    float mean[K][D];
-    float covariance[K][D][D];
-    float p_val[N][K];
+    float* examples = malloc((N * D) * sizeof(float ));
+
+    float* weights = malloc((K) * sizeof(float ));
+    float* mean = malloc((K * D) * sizeof(float ));
+    float* covariance = malloc((K * D * D) * sizeof(float ));
+    float* p_val = malloc((N * K) * sizeof(float ));
 
     const int row_per_process = N / comm_sz;
 
-    em_parallel(10, examples, mean, covariance, weights, p_val, my_rank, row_per_process);
+    em_parallel(10, examples, mean, covariance, weights, p_val, my_rank, row_per_process, N, D, K);
+
+    free(examples);
+    free(weights);
+    free(mean);
+    free(covariance);
+    free(p_val);
 
     MPI_Finalize();
     return 0;

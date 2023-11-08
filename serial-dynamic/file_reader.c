@@ -2,9 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "const.h"
-#include "file_reader.h"
 
-int N, D, K;
 
 int get_dimensions(char *row, const char delim)
 {
@@ -22,51 +20,48 @@ int get_dimensions(char *row, const char delim)
     return dimensions;
 }
 
-void read_file(char **rows)
+int readFile(char *rows[MAX_ROW_LEN])
 {
     FILE *file = fopen(FILE_PATH, "r");
 
     if (file != NULL)
     {
-        char row[MAX_ROW_LEN];
-
-        K = atoi(fgets(row, MAX_ROW_LEN, file));
-
         int rowN = 0;
-        do
-        {
-            fgets(row, MAX_ROW_LEN, file);
-            rows[rowN] = strndup(row, MAX_ROW_LEN);
-            rowN++;
-        } while (!feof(file));
+        char line[1024];
 
-        N = rowN - 1;
-        D = get_dimensions(rows[0], ',');
+        // get number of gaussians from the first line
+        if (fgets(line, 1024, file))
+        {
+//            K = atoi(strdup(line));
+        }
+
+        // get all the other lines of the dataset
+        while (fgets(line, 1024, file))
+        {
+            rows[rowN] = strdup(line);
+            rowN++;
+        }
+
         fclose(file);
-    }
-    else
-    {
-        printf("Error opening file");
-        exit(0);
+        return rowN;
     }
 }
 
-void fill_matrix(char **rows, float **dataset)
-{
-    // fills the matrix with the values of each element in each row converting it to double
+void fill_matrix(float* mat, int N, int D) {
+    char *rows[MAX_ROW_LEN];
+    int n = readFile(rows);
     for (int row = 0; row < N; row++)
     {
         int col = 0;
-        char delim[] = ",";
         // pointer to the first element
-        char *ptr = strtok(rows[row], delim);
+        char *ptr = strtok(rows[row], ",");
         while (ptr != NULL)
         {
-            if (ptr != delim)
+            if (ptr != ",")
             {
                 // convert element to double and store it in the matrix
-                dataset[row][col] = strtof(ptr, NULL);
-                ptr = strtok(NULL, delim);
+                mat[row * D + col] = strtof(ptr, NULL);
+                ptr = strtok(NULL, ",");
                 col++;
             }
         }

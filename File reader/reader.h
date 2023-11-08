@@ -4,8 +4,7 @@
 #include "../constants.h"
 
 
-int readFile(char *rows[MAX_LEN]);
-void fill_matrix(float mat[N][D]);
+void fill_matrix(float* mat, int N, int D);
 
 
 #endif //EM_PROJECT_READER_H

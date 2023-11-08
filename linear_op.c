@@ -4,21 +4,20 @@
 */
 
 #include <math.h>
-#include "constants.h"
+#include <stdlib.h>
 
 
-void getCofactor(float A[D][D], float temp[D][D], int p, int q, int n)
-{
+void getCofactor(float *A, float *temp, int p, int q, int n) {
     int i = 0, j = 0;
 
     // Looping for each element of the matrix
     for (int row = 0; row < n; row++) {
         for (int col = 0; col < n; col++) {
-            //  Copying into temporary matrix only those
-            //  element which are not in given row and
-            //  column
+            // Copying into the temporary matrix only those
+            // elements that are not in the given row and column
             if (row != p && col != q) {
-                temp[i][j++] = A[row][col];
+                temp[i * (n - 1) + j] = A[row * n + col];
+                j++;
 
                 // Row is filled, so increase row index and
                 // reset col index
@@ -32,75 +31,77 @@ void getCofactor(float A[D][D], float temp[D][D], int p, int q, int n)
 }
 
 
-float determinant(float A[D][D], int n) // Recursive function for finding determinant of matrix.
-{
-    float det = 0; // Initialize result
+float determinant(float *A, int n) {
+    float det = 0;
 
-    //  Base case : if matrix contains single element
+    // Base case: if the matrix contains a single element
     if (n == 1)
-        return A[0][0];
+        return A[0];
 
-    float temp[D][D]; // To store cofactors
+    float *temp = (float *)malloc(n * n  * sizeof(float));
 
-    int sign = 1; // To store sign multiplier
+    int sign = 1;
 
-    // Iterate for each element of first row
     for (int f = 0; f < n; f++) {
-        // Getting Cofactor of A[0][f]
+        // Getting the cofactor of A[0][f]
         getCofactor(A, temp, 0, f, n);
-        det += sign * A[0][f] * determinant(temp, n - 1);
+        det += sign * A[f] * determinant(temp, n - 1);
 
-        // terms are to be added with alternate sign
+        // Terms are to be added with alternate sign
         sign = -sign;
     }
+
+    free(temp);
 
     return det;
 }
 
 
-void adjoint(float A[D][D], float adj[D][D]) // Function to get adjoint of A[N][N] in adj[N][N].
-{
-    if (D == 1) {
-        adj[0][0] = 1;
+void adjoint(float *A, float *adj, int n) {
+    if (n == 1) {
+        adj[0] = 1;
         return;
     }
 
-    // temp is used to store cofactors of A[][]
+    // Temp is used to store cofactors of A[][]
     int sign = 1;
-    float temp[D][D];
+    float *temp = (float *)malloc(n * n  * sizeof(float));
 
-    for (int i = 0; i < D; i++) {
-        for (int j = 0; j < D; j++) {
-            // Get cofactor of A[i][j]
-            getCofactor(A, temp, i, j, D);
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            // Get the cofactor of A[i][j]
+            getCofactor(A, temp, i, j, n);
 
-            // sign of adj[j][i] positive if sum of row
+            // Sign of adj[j][i] is positive if the sum of row
             // and column indexes is even.
             sign = ((i + j) % 2 == 0) ? 1 : -1;
 
-            // Interchanging rows and columns to get the
+            // Interchange rows and columns to get the
             // transpose of the cofactor matrix
-            adj[j][i] = (sign) * (determinant(temp, D - 1));
+            adj[j * n + i] = (sign) * (determinant(temp, n - 1));
         }
     }
+
+    free(temp);
 }
 
 
-void inverse(float A[D][D], float inverse[D][D], float* det) // Function to calculate and store inverse
-{
-    // Find determinant of A[][]
-    *det = determinant(A, D);
+void inverse(float *A, float *inv, float *det, int n) {
+    // Find the determinant of A[][]
+    *det = determinant(A, n);
 
-    // Find adjoint
-    float adj[D][D];
-    adjoint(A, adj);
+    // Find the adjoint
+    float *adj = (float *)malloc(n * n * sizeof(float));
+    adjoint(A, adj, n);
 
-    // Find Inverse using formula "inverse(A) =
-    // adj(A)/det(A)"
-    for (int i = 0; i < D; i++)
-        for (int j = 0; j < D; j++)
-            inverse[i][j] = adj[i][j] / *det;
+    // Find the inverse using the formula "inverse(A) = adj(A)/det(A)"
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            inv[i * n + j] = adj[j * n + i] / *det;
+        }
+    }
 
+    free(adj);
 }
 
 
@@ -108,11 +109,11 @@ void inverse(float A[D][D], float inverse[D][D], float* det) // Function to calc
     Function that performs matrix vector multiplication
     and stores the result in the res vector passed as an argument.
 */
-void matmul(float mat[D][D], float vec[D], float res[D]) {
+void matmul(float *mat, float *vec, float *res, int D) {
     for (int i = 0; i < D; i++) {
         res[i] = 0;
         for (int j = 0; j < D; j++) {
-            res[i] += mat[i][j]*(float)vec[j];
+            res[i] += mat[i * D + j] * (float)vec[j];
         }
     }
 }
@@ -122,7 +123,7 @@ void matmul(float mat[D][D], float vec[D], float res[D]) {
     Function that calculates the dot product between two vectors
     and returns the results.
 */
-float dotProduct(float a[D], float b[D]) {
+float dotProduct(float *a, float *b, int D) {
     float result = 0.0;
     for (int i = 0; i < D; i++) {
         result += a[i] * b[i];
@@ -134,23 +135,23 @@ float dotProduct(float a[D], float b[D]) {
 /*
     Function that performs z-score normalization on the training examples.
 */
-void standardize(float data[N][D]) {
+void standardize(float* data, int N, int D) {
     // Calculate the mean for each dimension
-    float mean[D];
+    float* mean = malloc(D * sizeof(float ));
     for (int j = 0; j < D; j++) {
         mean[j] = 0.0;
         for (int i = 0; i < N; i++) {
-            mean[j] += data[i][j];
+            mean[j] += data[i * D + j];
         }
         mean[j] /= N;
     }
 
     // Calculate the standard deviation for each dimension
-    float stdDev[D];
+    float* stdDev = malloc(D * sizeof(float ));
     for (int j = 0; j < D; j++) {
         stdDev[j] = 0.0;
         for (int i = 0; i < N; i++) {
-            stdDev[j] += pow(data[i][j] - mean[j], 2);
+            stdDev[j] += pow(data[i * D + j] - mean[j], 2);
         }
         stdDev[j] = sqrt(stdDev[j] / (N - 1));
     }
@@ -158,7 +159,9 @@ void standardize(float data[N][D]) {
     // Perform standardization
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < D; j++) {
-            data[i][j] = (data[i][j] - mean[j]) / stdDev[j];
+            data[i * D + j] = (data[i * D + j] - mean[j]) / stdDev[j];
         }
     }
+    free(mean);
+    free(stdDev);
 }
