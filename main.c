@@ -11,7 +11,7 @@
 #include "File reader/reader.h"
 
 
-int main() {
+int main(int argc, char *argv[]) {
     int comm_sz;
     int my_rank;
 
@@ -22,9 +22,11 @@ int main() {
 
     srand(time(NULL));
 
-    int D = 5;
-    int K = 4;
-    int N = 300;
+    int N = atoi(argv[1]);
+    int D = atoi(argv[2]);
+    int K = atoi(argv[3]);
+
+    int max_iter = atoi(argv[4]);
 
     float* examples = malloc((N * D) * sizeof(float ));
 
@@ -35,7 +37,18 @@ int main() {
 
     const int row_per_process = N / comm_sz;
 
-    em_parallel(10, examples, mean, covariance, weights, p_val, my_rank, row_per_process, N, D, K);
+    em_parallel(max_iter, examples, mean, covariance,
+                weights, p_val, my_rank, row_per_process, N, D, K);
+
+    // uncomment to print the result of the algorithm
+    if (my_rank == 0) {
+        for (int i = 0; i < N; i++) {
+            for (int d = 0; d < K; d++) {
+                printf("%f ", p_val[i * K + d]);
+            }
+            printf("\n");
+        }
+    }
 
     free(examples);
     free(weights);

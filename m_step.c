@@ -124,10 +124,9 @@ void m_step(float *X, float *mean, float *cov, float *weights, float *p_val, int
     m_step_mean(mean, mean_num, sum_pij, K, D);
     free(mean_num);
 
-    // TODO correct later
     // update covariance
-//    calc_covariance_num(X, mean, cov, p_val, K, N, D);
-//    m_step_covariance(cov, sum_pij, K, D);
+    calc_covariance_num(X, mean, cov, p_val, K, N, D);
+    m_step_covariance(cov, cov, sum_pij, K, D);
 
     // update weights
     m_step_weights(sum_pij, weights, K);
@@ -162,12 +161,6 @@ void parallel_mean(float *local_examples, float *local_p_val, float *sum_pi,
     if (my_rank == 0) {
         m_step_mean(mean, total_mean_num, sum_pi, K, D);
 
-//        for (int i = 0; i < K; i++) {
-//            for (int d = 0; d < D; d++) {
-//                printf("%f ", mean[i][d]);
-//            }
-//            printf("\n");
-//        }
     }
     free(total_mean_num);
 
@@ -190,15 +183,6 @@ void parallel_cov(float *local_examples, float *local_p_val, float *mean, float 
     if (my_rank == 0) {
         m_step_covariance(cov, total_cov_num, sum_pi, K, D);
 
-//        for (int i = 0; i < K; i++) {
-//            for (int d = 0; d < D; d++) {
-//                for (int r = 0; r < D; r++) {
-//                    printf("%f ", covariance[i][d][r]);
-//                }
-//                printf("\n");
-//            }
-//            printf("\n");
-//        }
     }
     free(total_cov_num);
 
