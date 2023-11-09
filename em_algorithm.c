@@ -122,15 +122,9 @@ void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
     }
     free(local_examples);
 
-    // TODO gather p_val
-    if (my_rank == 2) {
-        for (int i = 0; i < row_per_process; i++) {
-            for (int d = 0; d < K; d++) {
-                printf("%f ", local_p_val[i * K + d]);
-            }
-            printf("\n");
-        }
-    }
+    // gather p_val from the processes
+    MPI_Gather(local_p_val, row_per_process * K, MPI_FLOAT, p_val,
+               row_per_process * K, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
     free(local_p_val);
 }

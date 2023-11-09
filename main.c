@@ -35,7 +35,18 @@ int main() {
 
     const int row_per_process = N / comm_sz;
 
-    em_parallel(10, examples, mean, covariance, weights, p_val, my_rank, row_per_process, N, D, K);
+    em_parallel(10, examples, mean, covariance,
+                weights, p_val, my_rank, row_per_process, N, D, K);
+
+    // uncomment to print the result of the algorithm
+//    if (my_rank == 0) {
+//        for (int i = 0; i < N; i++) {
+//            for (int d = 0; d < K; d++) {
+//                printf("%f ", p_val[i * K + d]);
+//            }
+//            printf("\n");
+//        }
+//    }
 
     free(examples);
     free(weights);
