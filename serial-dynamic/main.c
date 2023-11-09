@@ -6,15 +6,17 @@
 #include "em_algorithm.h"
 
 
-int main()
+int main(int argc, char *argv[])
 {
     // get starting time
     clock_t start = clock();
     srand(time(NULL));
 
-    int D = 5;
-    int K = 4;
-    int N = 300;
+    int N = atoi(argv[1]);
+    int D = atoi(argv[2]);
+    int K = atoi(argv[3]);
+
+    int max_iter = atoi(argv[4]);
 
     float* examples = malloc((N * D) * sizeof(float ));
     fill_matrix(examples, N, D);
@@ -32,7 +34,7 @@ int main()
 
     initialize(mean, covariance, weights, K, D);
 
-    em_train(500, examples, mean, covariance, weights, p_val, K, N, D);
+    em_train(max_iter, examples, mean, covariance, weights, p_val, K, N, D);
 
     end = clock();
     printf("Completed in: %f seconds with: %d samples\n", (double)(end - start) / CLOCKS_PER_SEC, N);
