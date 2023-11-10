@@ -89,11 +89,12 @@ void initialize_parallel(float *X, float *mean, float *cov, float *weights, int 
 
 
 void divide_matrix_and_dist(float *X, float *local_examples, float *mean,
-                            float *cov, float *weights, int row_per_process, int N, int D, int K) {
-    const int el_per_process = row_per_process * D;
+                            float *cov, float *weights, int* data_count, int* data_displ,
+                            int my_rank, int N, int D, int K) {
 
     // scatter matrix values to processes
-    MPI_Scatter(X, el_per_process, MPI_FLOAT, local_examples, el_per_process, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(X, data_count, data_displ, MPI_FLOAT, local_examples,
+                 data_count[my_rank], MPI_FLOAT, 0, MPI_COMM_WORLD);
 
     // broadcast mean, covariance, weights to all processes
     MPI_Bcast(mean, K*D, MPI_FLOAT, 0, MPI_COMM_WORLD);
@@ -103,15 +104,18 @@ void divide_matrix_and_dist(float *X, float *local_examples, float *mean,
 
 
 void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
-                 float *p_val, int my_rank, int row_per_process, int N, int D, int K) {
+                 float *p_val, int my_rank, int* data_count, int* data_displ,
+                 int* p_count, int* p_displ, int N, int D, int K) {
 
     initialize_parallel(X, mean, cov, weights, my_rank, N, D, K);
 
-    // allocate memory for local matrix values
-    float *local_examples = malloc((row_per_process * D) * sizeof(float ));
-    divide_matrix_and_dist(X, local_examples, mean, cov, weights, row_per_process, N, D, K);
+    int row_per_process = data_count[my_rank] / D;
 
-    float* local_p_val = malloc((row_per_process * K) * sizeof(float ));
+    // allocate memory for local matrix values
+    float *local_examples = malloc(data_count[my_rank] * sizeof(float ));
+    divide_matrix_and_dist(X, local_examples, mean, cov, weights, data_count, data_displ, my_rank, N, D, K);
+
+    float* local_p_val = malloc(p_count[my_rank] * sizeof(float ));
 
     for (int i = 0; i < n_iter; i++) {
         // E STEP
@@ -123,8 +127,8 @@ void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
     free(local_examples);
 
     // gather p_val from the processes
-    MPI_Gather(local_p_val, row_per_process * K, MPI_FLOAT, p_val,
-               row_per_process * K, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(local_p_val, p_count[my_rank], MPI_FLOAT, p_val,
+                p_count, p_displ, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
     free(local_p_val);
 }

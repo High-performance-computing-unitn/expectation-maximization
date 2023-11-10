@@ -3,12 +3,8 @@
 #include <stdio.h>
 #include <mpi.h>
 
-#include "constants.h"
+#include "utils.h"
 #include "em_algorithm.h"
-#include "linear_op.h"
-#include "e_step.h"
-#include "m_step.h"
-#include "File reader/reader.h"
 
 
 int main(int argc, char *argv[]) {
@@ -35,12 +31,18 @@ int main(int argc, char *argv[]) {
     float* covariance = malloc((K * D * D) * sizeof(float ));
     float* p_val = malloc((N * K) * sizeof(float ));
 
-    const int row_per_process = N / comm_sz;
+    int* data_count = (int*)malloc(comm_sz * sizeof(int));
+    int* data_displ = (int*)malloc(comm_sz * sizeof(int));
+    int* p_count = (int*)malloc(comm_sz * sizeof(int));
+    int* p_displ = (int*)malloc(comm_sz * sizeof(int));
+
+    divide_rows(data_count, data_displ, p_count, p_displ, N, D, K, comm_sz);
 
     em_parallel(max_iter, examples, mean, covariance,
-                weights, p_val, my_rank, row_per_process, N, D, K);
+                weights, p_val, my_rank, data_count, data_displ,
+                p_count, p_displ, N, D, K);
 
-    // uncomment to print the result of the algorithm
+//    uncomment to print the result of the algorithm
     if (my_rank == 0) {
         for (int i = 0; i < N; i++) {
             for (int d = 0; d < K; d++) {
@@ -50,11 +52,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    free(examples);
-    free(weights);
-    free(mean);
-    free(covariance);
-    free(p_val);
+    free_em_data(examples, mean, covariance, weights, p_val);
+    free_rows_data(data_count, data_displ, p_count, p_displ);
 
     MPI_Finalize();
     return 0;
