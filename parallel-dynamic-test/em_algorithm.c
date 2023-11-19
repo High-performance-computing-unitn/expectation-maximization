@@ -8,11 +8,26 @@
    The function that iteratively run expectation and maximization steps
    for n number of times.
 */
-void em_train(Sample *samples, float **mean, float ***cov, float *weights, float **p_val, int process_samples) {
-    for (int i = 0; i < max_iter; i++) {
-        e_step(samples, mean, cov, weights, p_val, process_samples);
-        m_step(samples, mean, cov, weights, p_val, process_samples);
+void em_train(Sample *samples, float **mean, float ***cov, float *weights, float **p_val, int process_samples, int process_rank)
+{
+    float **local_p_val = (float **)malloc(process_samples * sizeof(float *));
+    for (int i = 0; i < process_samples; i++)
+        local_p_val[i] = (float *)malloc(K * sizeof(float));
+
+    for (int i = 0; i < max_iter; i++)
+    {
+        e_step(samples, mean, cov, weights, local_p_val, process_samples);
+        m_step_parallel(local_p_val, samples, mean, cov, weights, process_rank, process_samples);
     }
+
+    /*
+        TO DO GATHER P VALUES
+    */
+
+    for (int i = 0; i < process_samples; i++)
+        free(local_p_val[i]);
+
+    free(local_p_val);
 }
 
 /*

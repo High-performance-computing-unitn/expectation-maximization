@@ -5,7 +5,6 @@
 #include <mpi.h>
 #include "constants.h"
 #include "file_reader.h"
-#include "utils.h"
 #include "linear_op.h"
 #include "em_algorithm.h"
 
@@ -88,7 +87,7 @@ int main(int argc, char *argv[])
 
     initialize(mean, covariance, weights);
 
-    em_train(samples, mean, covariance, weights, p_val, process_samples);
+    em_train(samples, mean, covariance, weights, p_val, process_samples, my_rank);
 
     end = clock();
     printf("Process %d completed in: %f seconds\n", my_rank, (double)(end - start) / CLOCKS_PER_SEC);

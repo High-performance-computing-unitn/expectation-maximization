@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "constants.h"
+#include "linear_op.h"
 
 /*
     Function that returns the gaussian probability density estimate.

@@ -4,6 +4,6 @@
 #include "constants.h"
 
 // run maximization step
-void m_step(float X[N][D], float mean[K][D], float cov[K][D][D], float weights[K], float p_val[N][K]);
+void m_step_parallel(float **local_p_val, Sample *samples, float **mean, float ***cov, float *weights, int process_rank, int process_samples);
 
 #endif 
