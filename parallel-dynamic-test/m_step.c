@@ -218,6 +218,10 @@ void parallel_cov(Sample *samples, float **local_p_val, float **mean, float *sum
 
     cube_expand(send_buff, cov, K, D, D);
 
+
+    /*
+        FREE NOT WORKING
+    */
     free(send_buff);
     free(recv_buff);
     for (int i = 0; i < K; i++)
