@@ -2,6 +2,56 @@
 #include <stdlib.h>
 #include "constants.h"
 
+void matrix_flatten(float *flat_matrix, float **matrix, int row, int col)
+{
+    for (int i = 0; i < row; i++)
+    {
+        for (int j = 0; j < col; j++)
+        {
+            flat_matrix[i * row + j] = matrix[i][j];
+        }
+    }
+}
+
+void matrix_expand(float *flat_matrix, float **matrix, int row, int col)
+{
+    for (int i = 0; i < row; i++)
+    {
+        for (int j = 0; j < col; j++)
+        {
+            matrix[i][j] = flat_matrix[i * row + j];
+        }
+    }
+}
+
+void cube_flatten(float *flat_cube, float ***cube, int row, int col, int depth)
+{
+    for (int i = 0; i < row; i++)
+    {
+        for (int j = 0; j < col; j++)
+        {
+            for (int z = 0; z < depth; z++)
+            {
+                flat_cube[i + row * (j + col * z)] = cube[i][j][z];
+            }
+        }
+    }
+}
+
+void cube_expand(float *flat_cube, float ***cube, int row, int col, int depth)
+{
+    for (int i = 0; i < row; i++)
+    {
+        for (int j = 0; j < col; j++)
+        {
+            for (int z = 0; z < depth; z++)
+            {
+                cube[i][j][z] = flat_cube[i + row * (j + col * z)];
+            }
+        }
+    }
+}
+
 void getCofactor(float **A, float **temp, int p, int q, int n)
 {
     int i = 0, j = 0;
@@ -60,7 +110,6 @@ float determinant(float **A, int n) // Recursive function for finding determinan
         free(temp[i]);
     }
     free(temp);
-    
 
     return det;
 }
@@ -131,11 +180,14 @@ void inverse(float **A, float **inverse, float *det) // Function to calculate an
     Function that performs matrix vector multiplication
     and stores the result in the res vector passed as an argument.
 */
-void matmul(float **mat, float *vec, float *res) {
-    for (int i = 0; i < D; i++) {
+void matmul(float **mat, float *vec, float *res)
+{
+    for (int i = 0; i < D; i++)
+    {
         res[i] = 0;
-        for (int j = 0; j < D; j++) {
-            res[i] += mat[i][j]*(float)vec[j];
+        for (int j = 0; j < D; j++)
+        {
+            res[i] += mat[i][j] * (float)vec[j];
         }
     }
 }
@@ -144,9 +196,11 @@ void matmul(float **mat, float *vec, float *res) {
     Function that calculates the dot product between two vectors
     and returns the results.
 */
-float dotProduct(float *a, float *b) {
+float dotProduct(float *a, float *b)
+{
     float result = 0.0;
-    for (int i = 0; i < D; i++) {
+    for (int i = 0; i < D; i++)
+    {
         result += a[i] * b[i];
     }
     return result;

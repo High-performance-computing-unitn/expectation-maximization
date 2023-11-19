@@ -25,7 +25,7 @@ float gaussian(Sample x, float *mean, float **cov)
     inverse(cov, inv, &det);
 
     // multiply (x-mean) and inverse of covariance
-    float *x_u_inv = (float *)malloc(D* sizeof(float));
+    float *x_u_inv = (float *)malloc(D * sizeof(float));
     matmul(inv, x_u, x_u_inv);
 
     // calculate the dot product of (x-mean) and the result of the previous step

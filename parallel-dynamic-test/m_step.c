@@ -1,5 +1,7 @@
 #include <mpi.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include "linear_op.h"
 #include "constants.h"
 
 /*
@@ -81,15 +83,14 @@ void calc_covariance_num(Sample *samples, float **mean, float ***cov, float **p_
 /*
     Function that updates the values of mean for each cluster.
 */
-void m_step_mean(float **mean, float **mean_nom, float *sum_pij)
+void m_step_mean(float **mean, float **mean_num, float *sum_pij)
 {
     for (int k = 0; k < K; k++)
     {
         for (int j = 0; j < D; j++)
         {
-
             // calculate the value of mean of cluster 'k' at the dimension 'j'
-            mean[k][j] = mean_nom[k][j] / sum_pij[k];
+            mean[k][j] = mean_num[k][j] / sum_pij[k];
         }
     }
 }
@@ -120,7 +121,14 @@ void parallel_mean(Sample *samples, float **local_p_val, float *sum_pi, float **
     for (int i = 0; i < K; i++)
         total_mean_num[i] = (float *)malloc(D * sizeof(float));
 
-    MPI_Reduce(local_mean_num, total_mean_num, K * D, MPI_FLOAT, MPI_SUM, MASTER_PROCESS, MPI_COMM_WORLD);
+    float *send_buff = (float *)malloc(K * D * sizeof(float));
+    float *recv_buff = (float *)malloc(K * D * sizeof(float));
+
+    matrix_flatten(send_buff, local_mean_num, K, D);
+
+    MPI_Reduce(send_buff, recv_buff, K * D, MPI_FLOAT, MPI_SUM, MASTER_PROCESS, MPI_COMM_WORLD);
+
+    matrix_expand(recv_buff, total_mean_num, K, D);
 
     // update mean values
     if (process_rank == MASTER_PROCESS)
@@ -128,9 +136,15 @@ void parallel_mean(Sample *samples, float **local_p_val, float *sum_pi, float **
         m_step_mean(mean, total_mean_num, sum_pi);
     }
 
-    // broadcast mean values to all processes
-    MPI_Bcast(mean, K * D, MPI_FLOAT, MASTER_PROCESS, MPI_COMM_WORLD);
+    matrix_flatten(send_buff, mean, K, D);
 
+    // broadcast mean values to all processes
+    MPI_Bcast(send_buff, K * D, MPI_FLOAT, MASTER_PROCESS, MPI_COMM_WORLD);
+
+    matrix_expand(send_buff, mean, K, D);
+
+    free(send_buff);
+    free(recv_buff);
     for (int i = 0; i < K; i++)
     {
         free(local_mean_num[i]);
@@ -143,10 +157,14 @@ void parallel_mean(Sample *samples, float **local_p_val, float *sum_pi, float **
 /*
     Function that updates the values of the covariance matrix for each cluster.
 */
-void m_step_covariance(float ***cov, float ***cov_num, float *sum_pij) {
-    for (int k = 0; k < K; k++) { // iterate over clusters
-        for (int r = 0; r < D; r++) { // iterate over dimensions
-            for (int c = 0; c < D; c++) {
+void m_step_covariance(float ***cov, float ***cov_num, float *sum_pij)
+{
+    for (int k = 0; k < K; k++)
+    { // iterate over clusters
+        for (int r = 0; r < D; r++)
+        { // iterate over dimensions
+            for (int c = 0; c < D; c++)
+            {
                 cov[k][r][c] = cov_num[k][r][c] / sum_pij[k];
             }
         }
@@ -177,7 +195,15 @@ void parallel_cov(Sample *samples, float **local_p_val, float **mean, float *sum
             total_cov_num[i][j] = (float *)malloc(D * sizeof(float));
         }
     }
-    MPI_Reduce(local_cov_num, total_cov_num, K * D * D, MPI_FLOAT, MPI_SUM, MASTER_PROCESS, MPI_COMM_WORLD);
+
+    float *send_buff = (float *)malloc(K * D * D * sizeof(float));
+    float *recv_buff = (float *)malloc(K * D * D * sizeof(float));
+
+    cube_flatten(send_buff, local_cov_num, K, D, D);
+
+    MPI_Reduce(send_buff, recv_buff, K * D * D, MPI_FLOAT, MPI_SUM, MASTER_PROCESS, MPI_COMM_WORLD);
+
+    cube_expand(recv_buff, total_cov_num, K, D, D);
 
     // update cov values
     if (process_rank == MASTER_PROCESS)
@@ -185,9 +211,15 @@ void parallel_cov(Sample *samples, float **local_p_val, float **mean, float *sum
         m_step_covariance(cov, total_cov_num, sum_pi);
     }
 
-    // broadcast cov values to all processes
-    MPI_Bcast(cov, K * D * D, MPI_FLOAT, MASTER_PROCESS, MPI_COMM_WORLD);
+    cube_flatten(send_buff, cov, K, D, D);
 
+    // broadcast cov values to all processes
+    MPI_Bcast(send_buff, K * D * D, MPI_FLOAT, MASTER_PROCESS, MPI_COMM_WORLD);
+
+    cube_expand(send_buff, cov, K, D, D);
+
+    free(send_buff);
+    free(recv_buff);
     for (int i = 0; i < K; i++)
     {
         for (int j = 0; i < D; j++)
@@ -205,15 +237,17 @@ void parallel_cov(Sample *samples, float **local_p_val, float **mean, float *sum
 /*
     Function that updates the values of weights for each cluster.
 */
-void m_step_weights(float *sum_pij, float *weights) {
+void m_step_weights(float *sum_pij, float *weights)
+{
     float den = 0;
-    for (int k = 0; k < K; k++) {
+    for (int k = 0; k < K; k++)
+    {
         den += sum_pij[k];
     }
-    for (int k = 0; k < K; k++) {
+    for (int k = 0; k < K; k++)
+    {
         weights[k] = sum_pij[k] / den;
     }
-
 }
 
 void parallel_weights(float *sum_pi, float *weights, int process_rank)

@@ -3,6 +3,14 @@
 
 #include "constants.h"
 
+void matrix_flatten(float *flat_matrix, float **matrix, int row, int col);
+
+void matrix_expand(float *flat_matrix, float **matrix, int row, int col);
+
+void cube_flatten(float *flat_cube, float ***cube, int row, int col, int depth);
+
+void cube_expand(float *flat_cube, float ***cube, int row, int col, int depth);
+
 // calculate the inverse of matrix
 void inverse(float **A, float **inverse, float *det);
 
