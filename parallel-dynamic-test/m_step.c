@@ -226,7 +226,7 @@ void parallel_cov(Sample *samples, float **local_p_val, float **mean, float *sum
     free(recv_buff);
     for (int i = 0; i < K; i++)
     {
-        for (int j = 0; i < D; j++)
+        for (int j = 0; j < D; j++)
         {
             free(local_cov_num[i][j]);
             free(total_cov_num[i][j]);
