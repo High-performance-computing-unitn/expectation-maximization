@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include "constants.h"
 
@@ -52,128 +53,104 @@ void cube_expand(float *flat_cube, float ***cube, int row, int col, int depth)
     }
 }
 
-void getCofactor(float **A, float **temp, int p, int q, int n)
+void generate_identity(float **matrix, int size)
 {
-    int i = 0, j = 0;
-
-    // Looping for each element of the matrix
-    for (int row = 0; row < n; row++)
+    for (int i = 0; i < size; i++)
     {
-        for (int col = 0; col < n; col++)
+        for (int j = 0; j < size; j++)
         {
-            //  Copying into temporary matrix only those
-            //  element which are not in given row and
-            //  column
-            if (row != p && col != q)
+            if (i == j)
             {
-                temp[i][j++] = A[row][col];
-
-                // Row is filled, so increase row index and
-                // reset col index
-                if (j == n - 1)
-                {
-                    j = 0;
-                    i++;
-                }
+                matrix[i][j] = 1;
+            }
+            else
+            {
+                matrix[i][j] = 0;
             }
         }
     }
 }
 
-float determinant(float **A, int n) // Recursive function for finding determinant of matrix.
+void copy_matrix(float **copy, float **matrix, int size)
 {
-    float det = 0; // Initialize result
-
-    //  Base case : if matrix contains single element
-    if (n == 1)
-        return A[0][0];
-
-    float **temp = (float **)malloc(D * sizeof(float *)); // To store cofactors
-    for (int i = 0; i < D; i++)
-        temp[i] = (float *)malloc(D * sizeof(float));
-
-    int sign = 1; // To store sign multiplier
-
-    // Iterate for each element of first row
-    for (int f = 0; f < n; f++)
+    for (int i = 0; i < size; i++)
     {
-        // Getting Cofactor of A[0][f]
-        getCofactor(A, temp, 0, f, n);
-        det += sign * A[0][f] * determinant(temp, n - 1);
-
-        // terms are to be added with alternate sign
-        sign = -sign;
+        for (int j = 0; j < size; j++)
+        {
+            copy[i][j] = matrix[i][j];
+        }
     }
-
-    for (int i = 0; i < D; i++)
-    {
-        free(temp[i]);
-    }
-    free(temp);
-
-    return det;
 }
 
-void adjoint(float **A, float **adj) // Function to get adjoint of A[N][N] in adj[N][N].
+void inverse(float **matrix, float **inverse, int size)
 {
-    if (D == 1)
-    {
-        adj[0][0] = 1;
-        return;
-    }
+    float **input_matrix = (float **)malloc(size * sizeof(float *));
+    for (int i = 0; i < size; i++)
+        input_matrix[i] = (float *)malloc(size * sizeof(float));
 
-    // temp is used to store cofactors of A[][]
-    int sign = 1;
-    float **temp = (float **)malloc(D * sizeof(float *));
-    for (int i = 0; i < D; i++)
-        temp[i] = (float *)malloc(D * sizeof(float));
+    copy_matrix(input_matrix, matrix, size);
 
-    for (int i = 0; i < D; i++)
+    generate_identity(inverse, size);
+    for (int i = 0; i < size; i++)
     {
-        for (int j = 0; j < D; j++)
+        if (input_matrix[i][i] == 0)
         {
-            // Get cofactor of A[i][j]
-            getCofactor(A, temp, i, j, D);
+            for (int j = i + 1; j < size; j++)
+            {
+                if (input_matrix[j][i] != 0.0)
+                {
+                    float *tmp = (float *)malloc(size * sizeof(float));
+                    tmp = input_matrix[i];
+                    input_matrix[i] = input_matrix[j];
+                    input_matrix[j] = tmp;
 
-            // sign of adj[j][i] positive if sum of row
-            // and column indexes is even.
-            sign = ((i + j) % 2 == 0) ? 1 : -1;
-
-            // Interchanging rows and columns to get the
-            // transpose of the cofactor matrix
-            adj[j][i] = (sign) * (determinant(temp, D - 1));
+                    free(tmp);
+                    break;
+                }
+                if (j == size - 1)
+                {
+                    printf("Inverse does not exist for this matrix");
+                    exit(0);
+                }
+            }
+        }
+        float scale = input_matrix[i][i];
+        for (int col = 0; col < size; col++)
+        {
+            input_matrix[i][col] = input_matrix[i][col] / scale;
+            inverse[i][col] = inverse[i][col] / scale;
+        }
+        if (i < size - 1)
+        {
+            for (int row = i + 1; row < size; row++)
+            {
+                float factor = input_matrix[row][i];
+                for (int col = 0; col < size; col++)
+                {
+                    input_matrix[row][col] -= factor * input_matrix[i][col];
+                    inverse[row][col] -= factor * inverse[i][col];
+                }
+            }
+        }
+    }
+    for (int zeroing_col = size - 1; zeroing_col >= 1; zeroing_col--)
+    {
+        for (int row = zeroing_col - 1; row >= 0; row--)
+        {
+            float factor = input_matrix[row][zeroing_col];
+            for (int col = 0; col < size; col++)
+            {
+                input_matrix[row][col] -= factor * input_matrix[zeroing_col][col];
+                inverse[row][col] -= factor * inverse[zeroing_col][col];
+            }
         }
     }
 
-    for (int i = 0; i < D; i++)
+    for (int i = 0; i < size; i++)
     {
-        free(temp[i]);
+        free(input_matrix[i]);
     }
-    free(temp);
-}
-
-void inverse(float **A, float **inverse, float *det) // Function to calculate and store inverse
-{
-    // Find determinant of A[][]
-    *det = determinant(A, D);
-
-    float **adj = (float **)malloc(D * sizeof(float *)); // Find adjoint
-    for (int i = 0; i < D; i++)
-        adj[i] = (float *)malloc(D * sizeof(float));
-
-    adjoint(A, adj);
-
-    // Find Inverse using formula "inverse(A) =
-    // adj(A)/det(A)"
-    for (int i = 0; i < D; i++)
-        for (int j = 0; j < D; j++)
-            inverse[i][j] = adj[i][j] / *det;
-
-    for (int i = 0; i < D; i++)
-    {
-        free(adj[i]);
-    }
-    free(adj);
+    free(input_matrix);
 }
 
 /*

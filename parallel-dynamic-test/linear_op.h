@@ -12,7 +12,7 @@ void cube_flatten(float *flat_cube, float ***cube, int row, int col, int depth);
 void cube_expand(float *flat_cube, float ***cube, int row, int col, int depth);
 
 // calculate the inverse of matrix
-void inverse(float **A, float **inverse, float *det);
+void inverse(float **input_matrix, float **inverse, int size);
 
 // calculate matrix-vector multiplication
 void matmul(float **mat, float *vec, float *res);

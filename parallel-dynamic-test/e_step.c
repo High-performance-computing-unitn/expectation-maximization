@@ -22,7 +22,7 @@ float gaussian(Sample x, float *mean, float **cov)
     for (int i = 0; i < D; i++)
         inv[i] = (float *)malloc(D * sizeof(float));
 
-    inverse(cov, inv, &det);
+    inverse(cov, inv, D);
 
     // multiply (x-mean) and inverse of covariance
     float *x_u_inv = (float *)malloc(D * sizeof(float));
