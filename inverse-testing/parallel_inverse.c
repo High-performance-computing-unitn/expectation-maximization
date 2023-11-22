@@ -2,12 +2,13 @@
 #include <stdlib.h>
 #include <time.h>
 #include <omp.h>
+#include <math.h>
 
 /*
 https://github.com/Presto412/Parallel-Matrix-Inversion-with-OpenMP/blob/master/pdc-da2-inverse-gje.cpp
 */
 
-void getCofactor(float **A, float **temp, int p, int q, int n)
+void getCofactor(float *A, float *temp, int p, int q, int n)
 {
     int i = 0, j = 0;
 
@@ -16,12 +17,12 @@ void getCofactor(float **A, float **temp, int p, int q, int n)
     {
         for (int col = 0; col < n; col++)
         {
-            //  Copying into temporary matrix only those
-            //  element which are not in given row and
-            //  column
+            // Copying into the temporary matrix only those
+            // elements that are not in the given row and column
             if (row != p && col != q)
             {
-                temp[i][j++] = A[row][col];
+                temp[i * (n - 1) + j] = A[row * n + col];
+                j++;
 
                 // Row is filled, so increase row index and
                 // reset col index
@@ -35,107 +36,162 @@ void getCofactor(float **A, float **temp, int p, int q, int n)
     }
 }
 
-float determinant(float **input_matrix, int n, int size) // Recursive function for finding determinant of matrix.
+float determinant(float *A, int n)
 {
-    float det = 0; // Initialize result
+    float det = 0;
 
-    //  Base case : if matrix contains single element
+    // Base case: if the matrix contains a single element
     if (n == 1)
-        return input_matrix[0][0];
+        return A[0];
 
-    float **temp = (float **)malloc(size * sizeof(float *)); // To store cofactors
-    for (int i = 0; i < size; i++)
-        temp[i] = (float *)malloc(size * sizeof(float));
+    float *temp = (float *)malloc(n * n * sizeof(float));
 
-    int sign = 1; // To store sign multiplier
+    int sign = 1;
 
-    // Iterate for each element of first row
     for (int f = 0; f < n; f++)
     {
-        // Getting Cofactor of A[0][f]
-        getCofactor(input_matrix, temp, 0, f, n);
-        det += sign * input_matrix[0][f] * determinant(temp, n - 1, size);
+        // Getting the cofactor of A[0][f]
+        getCofactor(A, temp, 0, f, n);
+        det += sign * A[f] * determinant(temp, n - 1);
 
-        // terms are to be added with alternate sign
+        // Terms are to be added with alternate sign
         sign = -sign;
     }
 
-    for (int i = 0; i < size; i++)
-    {
-        free(temp[i]);
-    }
     free(temp);
 
     return det;
 }
 
-void adjoint(float **input_matrix, float **adj, int size) // Function to get adjoint of A[N][N] in adj[N][N].
-{
-    if (size == 1)
-    {
-        adj[0][0] = 1;
-        return;
-    }
+// void getCofactor(float **A, float **temp, int p, int q, int n)
+// {
+//     int i = 0, j = 0;
 
-    // temp is used to store cofactors of A[][]
-    int sign = 1;
-    float **temp = (float **)malloc(size * sizeof(float *));
-    for (int i = 0; i < size; i++)
-        temp[i] = (float *)malloc(size * sizeof(float));
+//     // Looping for each element of the matrix
+//     for (int row = 0; row < n; row++)
+//     {
+//         for (int col = 0; col < n; col++)
+//         {
+//             //  Copying into temporary matrix only those
+//             //  element which are not in given row and
+//             //  column
+//             if (row != p && col != q)
+//             {
+//                 temp[i][j++] = A[row][col];
 
-    for (int i = 0; i < size; i++)
-    {
-        for (int j = 0; j < size; j++)
-        {
-            // Get cofactor of A[i][j]
-            getCofactor(input_matrix, temp, i, j, size);
+//                 // Row is filled, so increase row index and
+//                 // reset col index
+//                 if (j == n - 1)
+//                 {
+//                     j = 0;
+//                     i++;
+//                 }
+//             }
+//         }
+//     }
+// }
 
-            // sign of adj[j][i] positive if sum of row
-            // and column indexes is even.
-            sign = ((i + j) % 2 == 0) ? 1 : -1;
+// float determinant(float **input_matrix, int n, int size) // Recursive function for finding determinant of matrix.
+// {
+//     float det = 0; // Initialize result
 
-            // Interchanging rows and columns to get the
-            // transpose of the cofactor matrix
-            adj[j][i] = (sign) * (determinant(temp, size - 1, size));
-        }
-    }
+//     //  Base case : if matrix contains single element
+//     if (n == 1)
+//         return input_matrix[0][0];
 
-    for (int i = 0; i < size; i++)
-    {
-        free(temp[i]);
-    }
-    free(temp);
-}
+//     float **temp = (float **)malloc(size * sizeof(float *)); // To store cofactors
+//     for (int i = 0; i < size; i++)
+//         temp[i] = (float *)malloc(size * sizeof(float));
 
-float **inverse(float **input_matrix, int size) // Function to calculate and store inverse
-{
-    float **I = (float **)malloc(size * sizeof(float *));
-    for (int i = 0; i < size; i++)
-        I[i] = (float *)malloc(size * sizeof(float));
+//     int sign = 1; // To store sign multiplier
 
-    // Find determinant of A[][]
-    float det = determinant(input_matrix, size, size);
+//     // Iterate for each element of first row
+//     for (int f = 0; f < n; f++)
+//     {
+//         // Getting Cofactor of A[0][f]
+//         getCofactor(input_matrix, temp, 0, f, n);
+//         det += sign * input_matrix[0][f] * determinant(temp, n - 1, size);
 
-    float **adj = (float **)malloc(size * sizeof(float *)); // Find adjoint
-    for (int i = 0; i < size; i++)
-        adj[i] = (float *)malloc(size * sizeof(float));
+//         // terms are to be added with alternate sign
+//         sign = -sign;
+//     }
 
-    adjoint(input_matrix, adj, size);
+//     for (int i = 0; i < size; i++)
+//     {
+//         free(temp[i]);
+//     }
+//     free(temp);
 
-    // Find Inverse using formula "inverse(A) =
-    // adj(A)/det(A)"
-    for (int i = 0; i < size; i++)
-        for (int j = 0; j < size; j++)
-            I[i][j] = adj[i][j] / det;
+//     return det;
+// }
 
-    for (int i = 0; i < size; i++)
-    {
-        free(adj[i]);
-    }
-    free(adj);
+// void adjoint(float **input_matrix, float **adj, int size) // Function to get adjoint of A[N][N] in adj[N][N].
+// {
+//     if (size == 1)
+//     {
+//         adj[0][0] = 1;
+//         return;
+//     }
 
-    return I;
-}
+//     // temp is used to store cofactors of A[][]
+//     int sign = 1;
+//     float **temp = (float **)malloc(size * sizeof(float *));
+//     for (int i = 0; i < size; i++)
+//         temp[i] = (float *)malloc(size * sizeof(float));
+
+//     for (int i = 0; i < size; i++)
+//     {
+//         for (int j = 0; j < size; j++)
+//         {
+//             // Get cofactor of A[i][j]
+//             getCofactor(input_matrix, temp, i, j, size);
+
+//             // sign of adj[j][i] positive if sum of row
+//             // and column indexes is even.
+//             sign = ((i + j) % 2 == 0) ? 1 : -1;
+
+//             // Interchanging rows and columns to get the
+//             // transpose of the cofactor matrix
+//             adj[j][i] = (sign) * (determinant(temp, size - 1, size));
+//         }
+//     }
+
+//     for (int i = 0; i < size; i++)
+//     {
+//         free(temp[i]);
+//     }
+//     free(temp);
+// }
+
+// float **inverse(float **input_matrix, int size) // Function to calculate and store inverse
+// {
+//     float **I = (float **)malloc(size * sizeof(float *));
+//     for (int i = 0; i < size; i++)
+//         I[i] = (float *)malloc(size * sizeof(float));
+
+//     // Find determinant of A[][]
+//     float det = determinant(input_matrix, size, size);
+
+//     float **adj = (float **)malloc(size * sizeof(float *)); // Find adjoint
+//     for (int i = 0; i < size; i++)
+//         adj[i] = (float *)malloc(size * sizeof(float));
+
+//     adjoint(input_matrix, adj, size);
+
+//     // Find Inverse using formula "inverse(A) =
+//     // adj(A)/det(A)"
+//     for (int i = 0; i < size; i++)
+//         for (int j = 0; j < size; j++)
+//             I[i][j] = adj[i][j] / det;
+
+//     for (int i = 0; i < size; i++)
+//     {
+//         free(adj[i]);
+//     }
+//     free(adj);
+
+//     return I;
+// }
 
 /*
 END O CODE
@@ -314,10 +370,129 @@ void print_matrix(float **matrix, int SIZE)
     printf("\n");
 }
 
+float determinantOfMatrix(float **mat, int n)
+{
+    int index; // Initialize result
+    float det = 1, num1, num2, total = 1;
+
+    // temporary array for storing row
+    float temp[n + 1];
+
+    // loop for traversing the diagonal elements
+    for (int i = 0; i < n; i++)
+    {
+        index = i; // initialize the index
+
+        // finding the index which has non zero value
+        while (index < n && mat[index][i] == 0)
+        {
+            index++;
+        }
+        if (index == n) // if there is non zero element
+        {
+            // the determinant of matrix as zero
+            continue;
+        }
+        if (index != i)
+        {
+            // loop for swapping the diagonal element row and
+            // index row
+            for (int j = 0; j < n; j++)
+            {
+                float tmp = mat[index][j];
+                mat[index][j] = mat[i][j];
+                mat[i][j] = tmp;
+            }
+            // determinant sign changes when we shift rows go through determinant properties
+            det = det * pow(-1, index - i);
+        }
+
+        // storing the values of diagonal row elements
+        for (int j = 0; j < n; j++)
+        {
+            temp[j] = mat[i][j];
+        }
+        // traversing every row below the diagonal element
+        for (int j = i + 1; j < n; j++)
+        {
+            num1 = temp[i];   // value of diagonal element
+            num2 = mat[j][i]; // value of next row element
+
+            // traversing every column of row
+            // and multiplying to every row
+            for (int k = 0; k < n; k++)
+            {
+                // multiplying to make the diagonal
+                // element and next row element equal
+                mat[j][k] = (num1 * mat[j][k]) - (num2 * temp[k]);
+            }
+            total = total * num1; // Det(kA)=kDet(A);
+        }
+    }
+
+    // multiplying the diagonal elements to get determinant
+    for (int i = 0; i < n; i++)
+    {
+        det = det * mat[i][i];
+    }
+    return (det / total); // Det(kA)/k=Det(A);
+}
+
 int main()
 {
     srand(time(NULL));
-    int SIZE = 12;
+    int SIZE = 13;
+    int threads = 2;
+    clock_t start = clock();
+    clock_t end = clock();
+
+    printf("SIZE of matrix is: %d -- threads: %d\n", SIZE, threads);
+
+    float **matrix1 = (float **)malloc(SIZE * sizeof(float *));
+    for (int i = 0; i < SIZE; i++)
+        matrix1[i] = (float *)malloc(SIZE * sizeof(float));
+
+    float *matrix2 = (float *)malloc(SIZE * SIZE * sizeof(float));
+
+    for (int i = 0; i < SIZE; i++)
+    {
+        for (int j = 0; j < SIZE; j++)
+        {
+            matrix1[i][j] = (float)rand() / (float)(RAND_MAX / SIZE);
+            matrix2[i * SIZE + j] = matrix1[i][j];
+        }
+    }
+
+    printf("Input Matrix is:");
+    print_matrix(matrix1, SIZE);
+
+    start = clock();
+
+    float det = determinantOfMatrix(matrix1, SIZE);
+
+    end = clock();
+    printf("\nDeterminant took: %f seconds and resulted in: %f\n\n", (double)(end - start) / CLOCKS_PER_SEC, det);
+
+    start = clock();
+
+    float det2 = determinant(matrix2, SIZE);
+
+    end = clock();
+    printf("\nDeterminant O mode took: %f seconds and resulted in: %f", (double)(end - start) / CLOCKS_PER_SEC, det2);
+
+    for (int i = 0; i < SIZE; i++)
+    {
+        free(matrix1[i]);
+    }
+    free(matrix1);
+    free(matrix2);
+
+    return 0;
+}
+
+/*
+   srand(time(NULL));
+    int SIZE = 3;
     int threads = 2;
     clock_t start = clock();
     clock_t end = clock();
@@ -349,19 +524,22 @@ int main()
     printf("Input Matrix is:");
     print_matrix(matrix1, SIZE);
 
-    /*
-    PARALLEL
-    */
+
 
     float **matrix_parallel = (float **)malloc(SIZE * sizeof(float *));
     for (int i = 0; i < SIZE; i++)
         matrix_parallel[i] = (float *)malloc(SIZE * sizeof(float));
 
     start = clock();
-    matrix_parallel = generate_inverse_parallel(matrix2, threads, SIZE);
+    //matrix_parallel = generate_inverse_parallel(matrix2, threads, SIZE);
+
+    //determinant parallel
+
+
+
     end = clock();
     printf("\nParallel inverse took: %f seconds and resulted in:", (double)(end - start) / CLOCKS_PER_SEC);
-    print_matrix(matrix_parallel, SIZE);
+    //print_matrix(matrix_parallel, SIZE);
 
     for (int i = 0; i < SIZE; i++)
     {
@@ -371,41 +549,40 @@ int main()
     free(matrix2);
     free(matrix_parallel);
 
-    /*
-    SERIAL O MODE
-    */
 
-    float **matrix_parallel_O = (float **)malloc(SIZE * sizeof(float *));
-    for (int i = 0; i < SIZE; i++)
-        matrix_parallel_O[i] = (float *)malloc(SIZE * sizeof(float));
+    // float **matrix_parallel_O = (float **)malloc(SIZE * sizeof(float *));
+    // for (int i = 0; i < SIZE; i++)
+    //     matrix_parallel_O[i] = (float *)malloc(SIZE * sizeof(float));
 
-    start = clock();
-    matrix_parallel_O = inverse(matrix3, SIZE);
-    end = clock();
-    printf("\nParallel inverse O mode took: %f seconds and resulted in:", (double)(end - start) / CLOCKS_PER_SEC);
-    print_matrix(matrix_parallel_O, SIZE);
+    // start = clock();
+    // matrix_parallel_O = inverse(matrix3, SIZE);
+    // end = clock();
+    // printf("\nParallel inverse O mode took: %f seconds and resulted in:", (double)(end - start) / CLOCKS_PER_SEC);
+    // print_matrix(matrix_parallel_O, SIZE);
 
-    for (int i = 0; i < SIZE; i++)
-    {
-        free(matrix3[i]);
-        free(matrix_parallel_O[i]);
-    }
-    free(matrix3);
-    free(matrix_parallel_O);
-
-    /*
-    SERIAL
-    */
+    // for (int i = 0; i < SIZE; i++)
+    // {
+    //     free(matrix3[i]);
+    //     free(matrix_parallel_O[i]);
+    // }
+    // free(matrix3);
+    // free(matrix_parallel_O);
 
     float **matrix_serial = (float **)malloc(SIZE * sizeof(float *));
     for (int i = 0; i < SIZE; i++)
         matrix_serial[i] = (float *)malloc(SIZE * sizeof(float));
 
     start = clock();
-    matrix_serial = generate_inverse_serial(matrix1, SIZE);
+    //matrix_serial = generate_inverse_serial(matrix1, SIZE);
+
+    //determinant serial
+
+
+    determinantOfMatrix(matrix1, SIZE);
+
     end = clock();
     printf("\nSerial inverse took: %f seconds and resulted in:", (double)(end - start) / CLOCKS_PER_SEC);
-    print_matrix(matrix_serial, SIZE);
+    //print_matrix(matrix_serial, SIZE);
 
     for (int i = 0; i < SIZE; i++)
     {
@@ -414,51 +591,4 @@ int main()
     }
     free(matrix1);
     free(matrix_serial);
-
-    return 0;
-}
-
-/*
-#include <stdio.h>
-#include <stdlib.h>
-#include <mpi.h>
-
-int main()
-{
-    int comm_sz;
-    int my_rank;
-
-    MPI_Init(NULL, NULL);
-
-    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
-    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-
-    int *array = (int *)malloc(10 * sizeof(int));
-
-    for (int i = 0; i < 10; i++)
-    {
-        array[i] = i;
-    }
-
-    printf("Process %d has:\n", my_rank);
-    for (int i = 0; i < 10; i++)
-    {
-        printf("%d ", array[i]);
-    }
-
-    int *recv_array = (int *)malloc(10 * sizeof(int));
-
-    MPI_Reduce(array, recv_array, 10, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-
-    printf("Process %d after reduce has:\n", my_rank);
-    for (int i = 0; i < 10; i++)
-    {
-        printf("%d ", recv_array[i]);
-    }
-
-    free(array);
-    free(recv_array);
-    MPI_Finalize();
-    return 0;
-}
-*/
+    */
