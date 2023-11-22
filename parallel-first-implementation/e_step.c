@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "linear_op.h"
+#include "constants.h"
 
 
 /*
@@ -32,7 +33,7 @@ float gaussian(float *x, float *mean, float *cov, int D) {
     // calculate the exponent
     in_exp = exp(-0.5 * in_exp);
 
-    float out_exp = 1. / sqrt(pow(2 * M_PI, D) * det);
+    float out_exp = 1. / sqrt(pow(2 * PI, D) * det);
 
     return out_exp * in_exp;
 }

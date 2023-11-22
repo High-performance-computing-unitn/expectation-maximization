@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "../constants.h"
+#include "constants.h"
 
 int readFile(char *rows[MAX_LEN])
 {

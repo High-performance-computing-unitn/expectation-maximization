@@ -8,8 +8,7 @@
 #include "linear_op.h"
 #include "e_step.h"
 #include "m_step.h"
-#include "File reader/reader.h"
-
+#include "reader.h"
 
 int main(int argc, char *argv[]) {
     int comm_sz;
