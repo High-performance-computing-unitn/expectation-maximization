@@ -1,7 +1,5 @@
-#ifndef EM_PROJECT_UTILS_PARALLEL
-#define EM_PROJECT_UTILS_PARALLEL
-
-float *allocate_array(int rows);
+#ifndef EM_PROJECT_UTILS_SERIAL
+#define EM_PROJECT_UTILS_SERIAL
 
 // calculate the inverse of matrix
 void inverse(float *A, float *inv, float *det, int n); // Function to calculate and store inverse

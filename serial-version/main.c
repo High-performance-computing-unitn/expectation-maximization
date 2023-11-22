@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "utils.h"
+#include "const.h"
 #include "file_reader.h"
 #include "em_algorithm.h"
 
@@ -15,8 +16,8 @@ int main(int argc, char *argv[])
     int N = atoi(argv[1]);
     int D = atoi(argv[2]);
     int K = atoi(argv[3]);
-
     int max_iter = atoi(argv[4]);
+    FILE_PATH = argv[5];
 
     float* examples = malloc((N * D) * sizeof(float ));
     fill_matrix(examples, N, D);

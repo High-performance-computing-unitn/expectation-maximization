@@ -2,19 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-float *allocate_array(int rows)
-{
-    float *array = (float *)malloc(rows * sizeof(float));
-    if (array == NULL)
-    {
-        printf("can not allocate memory\n");
-        exit(0);
-    }
-
-    return array;
-}
-
 float determinant(float *A, int n) {
     float det = 0;
 
