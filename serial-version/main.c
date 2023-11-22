@@ -6,7 +6,6 @@
 #include "file_reader.h"
 #include "em_algorithm.h"
 
-
 int main(int argc, char *argv[])
 {
     // get starting time
@@ -17,10 +16,10 @@ int main(int argc, char *argv[])
     int D = atoi(argv[2]);
     int K = atoi(argv[3]);
     int max_iter = atoi(argv[4]);
-    FILE_PATH = argv[5];
+    char *FILE_PATH = argv[5];
 
-    float* examples = malloc((N * D) * sizeof(float ));
-    fill_matrix(examples, N, D);
+    float *examples = malloc((N * D) * sizeof(float));
+    fill_matrix(examples, N, D, FILE_PATH);
 
     clock_t end = clock();
     printf("Time to read file: %f seconds with: %d samples\n", (double)(end - start) / CLOCKS_PER_SEC, N);
@@ -28,10 +27,10 @@ int main(int argc, char *argv[])
     start = clock();
     standardize(examples, N, D);
 
-    float* weights = malloc((K) * sizeof(float ));
-    float* mean = malloc((K * D) * sizeof(float ));
-    float* covariance = malloc((K * D * D) * sizeof(float ));
-    float* p_val = malloc((N * K) * sizeof(float ));
+    float *weights = malloc((K) * sizeof(float));
+    float *mean = malloc((K * D) * sizeof(float));
+    float *covariance = malloc((K * D * D) * sizeof(float));
+    float *p_val = malloc((N * K) * sizeof(float));
 
     initialize(mean, covariance, weights, K, D);
 
@@ -40,9 +39,11 @@ int main(int argc, char *argv[])
     end = clock();
     printf("Completed in: %f seconds with: %d samples\n", (double)(end - start) / CLOCKS_PER_SEC, N);
 
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < K; j++) {
-            printf("%f ", p_val[i* K + j]);
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < K; j++)
+        {
+            printf("%f ", p_val[i * K + j]);
         }
         printf("\n");
     }
