@@ -438,10 +438,57 @@ float determinantOfMatrix(float **mat, int n)
     return (det / total); // Det(kA)/k=Det(A);
 }
 
+float chatdet(float **matrix, int size) {
+    float det = 0;
+    int sign = 1;
+
+    if (size == 1) {
+        return matrix[0][0];
+    }
+
+    // Create temporary matrix for submatrix
+    float **temp = (float **)malloc(size * sizeof(float *));
+    for (int i = 0; i < size; i++)
+        temp[i] = (float *)malloc(size * sizeof(float));
+
+    // Decompose the matrix into smaller matrices and compute their determinants
+    #pragma omp parallel for private(temp) reduction(+:det)
+    for (int i = 0; i < size; i++) {
+        int subi = 0; // Submatrix row index
+
+        // Create the submatrix
+        for (int row = 1; row < size; row++) {
+            int subj = 0; // Submatrix column index
+
+            for (int col = 0; col < size; col++) {
+                if (col != i) {
+                    temp[subi][subj++] = matrix[row][col];
+                }
+            }
+            subi++;
+        }
+
+        // Calculate the determinant recursively for the submatrix
+        det += sign * matrix[0][i] * chatdet(temp, size);
+
+        // Alternate the sign for next iteration
+        sign = -sign;
+    }
+
+    for (int i = 0; i < size; i++)
+    {
+        free(temp[i]);
+    }
+    free(temp);
+    
+    return det;
+}
+
+
 int main()
 {
     srand(time(NULL));
-    int SIZE = 13;
+    int SIZE = 9;
     int threads = 2;
     clock_t start = clock();
     clock_t end = clock();
@@ -452,7 +499,13 @@ int main()
     for (int i = 0; i < SIZE; i++)
         matrix1[i] = (float *)malloc(SIZE * sizeof(float));
 
+    float **matrix3 = (float **)malloc(SIZE * sizeof(float *));
+    for (int i = 0; i < SIZE; i++)
+        matrix3[i] = (float *)malloc(SIZE * sizeof(float));
+
     float *matrix2 = (float *)malloc(SIZE * SIZE * sizeof(float));
+
+    float *matrix4 = (float *)malloc(SIZE * SIZE * sizeof(float));
 
     for (int i = 0; i < SIZE; i++)
     {
@@ -460,22 +513,46 @@ int main()
         {
             matrix1[i][j] = (float)rand() / (float)(RAND_MAX / SIZE);
             matrix2[i * SIZE + j] = matrix1[i][j];
+            matrix4[i * SIZE + j] = matrix1[i][j];
+            matrix3[i][j] = matrix1[i][j];
         }
     }
 
     printf("Input Matrix is:");
     print_matrix(matrix1, SIZE);
 
+    
     start = clock();
 
-    float det = determinantOfMatrix(matrix1, SIZE);
+    float det3;
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            det3 = chatdet(matrix1, SIZE);
+        }
+    }
+    
+    end = clock();
+    printf("\nDeterminant chatgpt took: %f seconds and resulted in: %f\n\n", (double)(end - start) / CLOCKS_PER_SEC, det3);
 
+ 
+
+    start = clock();
+
+    float det = determinant(matrix2, SIZE);
+    
     end = clock();
     printf("\nDeterminant took: %f seconds and resulted in: %f\n\n", (double)(end - start) / CLOCKS_PER_SEC, det);
 
     start = clock();
 
-    float det2 = determinant(matrix2, SIZE);
+    float det2;
+
+#pragma omp parallel if (omp_in_parallel())
+    {
+        det2 = determinant(matrix4, SIZE);
+    }
 
     end = clock();
     printf("\nDeterminant O mode took: %f seconds and resulted in: %f", (double)(end - start) / CLOCKS_PER_SEC, det2);
@@ -483,9 +560,12 @@ int main()
     for (int i = 0; i < SIZE; i++)
     {
         free(matrix1[i]);
+        free(matrix3[i]);
     }
     free(matrix1);
     free(matrix2);
+    free(matrix3);
+    free(matrix4);
 
     return 0;
 }
