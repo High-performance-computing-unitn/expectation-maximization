@@ -26,6 +26,8 @@ int main(int argc, char *argv[])
     D = atoi(argv[2]);
     K = atoi(argv[3]);
     max_iter = atoi(argv[4]);
+    char *FILE_PATH = argv[5];
+
     last_process = world_size - 1;
 
     int process_samples = N / world_size;
@@ -40,7 +42,7 @@ int main(int argc, char *argv[])
 
     Sample *samples = (Sample *)malloc(sample_size * sizeof(Sample)); // allocate an array of samples
 
-    fill_matrix(samples, rows, process_samples, my_rank); // read the file and store its content
+    fill_matrix(samples, rows, process_samples, my_rank, FILE_PATH); // read the file and store its content
 
     for (int i = 0; i < MAX_LINES; i++)
     {
