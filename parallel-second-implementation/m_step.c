@@ -150,16 +150,11 @@ void parallel_cov(Sample *samples, float *local_p_val, float *mean, float *sum_p
     // calculate sum across all processes and send result to process 0
     float *total_cov_num = (float *)malloc(K * D * D * sizeof(float));
 
-    float *send_buff = (float *)malloc(K * D * D * sizeof(float));
-    float *recv_buff = (float *)malloc(K * D * D * sizeof(float));
-
     MPI_Reduce(local_cov_num, total_cov_num, K * D * D, MPI_FLOAT, MPI_SUM, MASTER_PROCESS, MPI_COMM_WORLD);
 
     // update cov values
     if (process_rank == MASTER_PROCESS)
-    {
         m_step_covariance(cov, total_cov_num, sum_pi);
-    }
 
     // broadcast cov values to all processes
     MPI_Bcast(cov, K * D * D, MPI_FLOAT, MASTER_PROCESS, MPI_COMM_WORLD);

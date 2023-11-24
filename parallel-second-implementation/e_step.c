@@ -15,14 +15,16 @@ float gaussian(Sample x, float *mean, float *cov, int j)
     // x - mean
     float *x_u = (float *)malloc(D * sizeof(float));
     for (int i = 0; i < D; i++)
-        x_u[i] = x.dimensions[i] - mean[starting_index_mean + i];    
+        x_u[i] = x.dimensions[i] - mean[starting_index_mean + i];
 
     // calculate the inverse of the covariance matrix and the determinant
-    float det;
+    float det = 0;
     float *inv = (float *)malloc(D * D * sizeof(float));
 
-    // compute det
-
+    /*
+    compute determinant
+    */
+   
     inverse(cov, inv, D, starting_index_cov);
 
     // multiply (x-mean) and inverse of covariance
@@ -103,9 +105,9 @@ void e_step(Sample *X, float *mean, float *cov, float *weights, float *p_val, in
             // copy_values(mean_row, mean, cov_sub_mat, cov, j);
             float g = gaussian(X[i], mean, cov, j) * weights[j]; // calculate pdf
             if (!(g == g))
-            {                                                     // g is Nan - matrix is singular
-                reset_mean(mean, j);                              // randomly reassign
-                reset_cov(cov, j);                                // randomly reassign
+            {                                                  // g is Nan - matrix is singular
+                reset_mean(mean, j);                           // randomly reassign
+                reset_cov(cov, j);                             // randomly reassign
                 g = gaussian(X[i], mean, cov, j) * weights[j]; // calculate again pdf
             }
             gaussians[j] = g; // save pdf
