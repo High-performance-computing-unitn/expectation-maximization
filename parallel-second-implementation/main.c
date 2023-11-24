@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     /*
         INITIALIZATION OF VARIABLES
     */
-    clock_t start, end;
+    double start, finish;
     int world_size, my_rank;
 
     MPI_Init(NULL, NULL);
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     /*
         READING FROM FILE
     */
-    start = clock();
+    start = MPI_Wtime();
 
     char **rows = (char **)malloc(MAX_LINES * sizeof(char *)); // allocate memory for array of rows of the file
 
@@ -50,8 +50,8 @@ int main(int argc, char *argv[])
     }
     free(rows);
 
-    end = clock();
-    printf("Process %d read file succesfully in: %f seconds\n", my_rank, (double)(end - start) / CLOCKS_PER_SEC);
+    finish = MPI_Wtime();
+    printf("Process %d read file succesfully in: %e seconds\n", my_rank, finish - start);
 
 
     /*
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
         EM ALGORTIHM
     */
 
-    start = clock();
+    start = MPI_Wtime();
 
     standardize(samples, process_samples);
 
@@ -75,8 +75,8 @@ int main(int argc, char *argv[])
 
     em_train(samples, mean, covariance, weights, p_val, process_samples, my_rank);
 
-    end = clock();
-    printf("Process %d completed in: %f seconds\n", my_rank, (double)(end - start) / CLOCKS_PER_SEC);
+    finish = MPI_Wtime();
+    printf("Process %d completed in: %e seconds\n", my_rank, finish - start);
 
     // for (int i = 0; i < N; i++)
     // {
