@@ -8,11 +8,9 @@
    The function that iteratively run expectation and maximization steps
    for n number of times.
 */
-void em_train(Sample *samples, float **mean, float ***cov, float *weights, float **p_val, int process_samples, int process_rank)
+void em_train(Sample *samples, float *mean, float *cov, float *weights, float *p_val, int process_samples, int process_rank)
 {
-    float **local_p_val = (float **)malloc(process_samples * sizeof(float *));
-    for (int i = 0; i < process_samples; i++)
-        local_p_val[i] = (float *)malloc(K * sizeof(float));
+    float *local_p_val = (float *)malloc(process_samples * K * sizeof(float));
 
     for (int i = 0; i < max_iter; i++)
     {
@@ -24,9 +22,6 @@ void em_train(Sample *samples, float **mean, float ***cov, float *weights, float
         TO DO GATHER P VALUES
     */
 
-    for (int i = 0; i < process_samples; i++)
-        free(local_p_val[i]);
-
     free(local_p_val);
 }
 
@@ -34,13 +29,13 @@ void em_train(Sample *samples, float **mean, float ***cov, float *weights, float
     The function that initializes the initial values of mean
     in the range (0, 1).
 */
-void init_mean(float **mean)
+void init_mean(float *mean)
 {
     for (int k = 0; k < K; k++)
     {
         for (int d = 0; d < D; d++)
         {
-            mean[k][d] = (rand() % 10 + 1) * 0.1;
+            mean[k * D + d] = (rand() % 10 + 1) * 0.1;
         }
     }
 }
@@ -50,7 +45,7 @@ void init_mean(float **mean)
     In order to make the matrix non-singular, it assigns the values
     in range (0, 1) in the main diagonal, and 1e-6 everywhere else.
 */
-void init_cov(float ***cov)
+void init_cov(float *cov)
 {
     for (int k = 0; k < K; k++)
     {
@@ -60,11 +55,11 @@ void init_cov(float ***cov)
             {
                 if (r == c)
                 {
-                    cov[k][r][c] = (rand() % 10 + 1) * 0.1;
+                    cov[k * D * D + r * D + c] = (rand() % 10 + 1) * 0.1;
                 }
                 else
                 {
-                    cov[k][r][c] = 1e-6;
+                    cov[k * D * D + r * D + c] = 1e-6;
                 }
             }
         }
@@ -87,7 +82,7 @@ void init_weights(float *weights)
 /*
     Function that initializes mean, covariance and weights.
 */
-void initialize(float **mean, float ***cov, float *weights)
+void initialize(float *mean, float *cov, float *weights)
 {
     init_mean(mean);
     init_cov(cov);

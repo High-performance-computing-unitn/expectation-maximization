@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     int sample_size = process_samples + 1;
 
     /*
-        START READING FROM FILE
+        READING FROM FILE
     */
     start = clock();
 
@@ -53,6 +53,16 @@ int main(int argc, char *argv[])
     end = clock();
     printf("Process %d read file succesfully in: %f seconds\n", my_rank, (double)(end - start) / CLOCKS_PER_SEC);
 
+
+    /*
+        MEMORY ALLOCATION
+    */
+
+    float *weights = (float *)malloc(K * sizeof(float));
+    float *mean = (float *)malloc(K * D * sizeof(float));
+    float *covariance = (float *)malloc(K * D * D * sizeof(float));
+    float *p_val = (float *)malloc(N * K * sizeof(float));
+ 
     /*
         EM ALGORTIHM
     */
@@ -60,32 +70,6 @@ int main(int argc, char *argv[])
     start = clock();
 
     standardize(samples, process_samples);
-
-    /*
-        MEMORY ALLOCATION
-    */
-
-    float *weights = (float *)malloc(K * sizeof(float));
-
-    float **mean = (float **)malloc(K * sizeof(float *));
-    for (int i = 0; i < K; i++)
-        mean[i] = (float *)malloc(D * sizeof(float));
-
-    float ***covariance = (float ***)malloc(K * sizeof(float **));
-    for (int i = 0; i < K; i++)
-    {
-        covariance[i] = (float **)malloc(D * sizeof(float *));
-        for (int j = 0; j < D; j++)
-            covariance[i][j] = (float *)malloc(D * sizeof(float));
-    }
-
-    float **p_val = (float **)malloc(N * sizeof(float *));
-    for (int i = 0; i < N; i++)
-        p_val[i] = (float *)malloc(K * sizeof(float));
-
-    /*
-        EM ALGORITHM
-    */
 
     initialize(mean, covariance, weights);
 
@@ -106,32 +90,12 @@ int main(int argc, char *argv[])
     /*
         MEMORY FREE AND FINALIZATION
     */
+
     free(weights);
-
-    for (int i = 0; i < K; i++)
-    {
-        free(mean[i]);
-    }
     free(mean);
-
-    for (int i = 0; i < K; i++)
-    {
-        for (int j = 0; j < D; j++)
-        {
-            free(covariance[i][j]);
-        }
-        free(covariance[i]);
-    }
     free(covariance);
-
-    for (int i = 0; i < N; i++)
-    {
-        free(p_val[i]);
-    }
     free(p_val);
-
     free(samples);
-
     MPI_Finalize();
     return 0;
 }

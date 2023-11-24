@@ -3,92 +3,34 @@
 #include <stdlib.h>
 #include "constants.h"
 
-void matrix_flatten(float *flat_matrix, float **matrix, int row, int col)
-{
-    for (int i = 0; i < row; i++)
-    {
-        for (int j = 0; j < col; j++)
-        {
-            flat_matrix[i * row + j] = matrix[i][j];
-        }
-    }
-}
-
-void matrix_expand(float *flat_matrix, float **matrix, int row, int col)
-{
-    for (int i = 0; i < row; i++)
-    {
-        for (int j = 0; j < col; j++)
-        {
-            matrix[i][j] = flat_matrix[i * row + j];
-        }
-    }
-}
-
-void cube_flatten(float *flat_cube, float ***cube, int row, int col, int depth)
-{
-    for (int i = 0; i < row; i++)
-    {
-        for (int j = 0; j < col; j++)
-        {
-            for (int z = 0; z < depth; z++)
-            {
-                flat_cube[i + row * (j + col * z)] = cube[i][j][z];
-            }
-        }
-    }
-}
-
-void cube_expand(float *flat_cube, float ***cube, int row, int col, int depth)
-{
-    for (int i = 0; i < row; i++)
-    {
-        for (int j = 0; j < col; j++)
-        {
-            for (int z = 0; z < depth; z++)
-            {
-                cube[i][j][z] = flat_cube[i + row * (j + col * z)];
-            }
-        }
-    }
-}
-
 void generate_identity(float **matrix, int size)
 {
     for (int i = 0; i < size; i++)
-    {
         for (int j = 0; j < size; j++)
-        {
             if (i == j)
-            {
                 matrix[i][j] = 1;
-            }
             else
-            {
                 matrix[i][j] = 0;
-            }
-        }
-    }
 }
 
-void copy_matrix(float **copy, float **matrix, int size)
+void copy_matrix(float **copy, float *matrix, int size, int starting_index)
 {
     for (int i = 0; i < size; i++)
-    {
         for (int j = 0; j < size; j++)
-        {
-            copy[i][j] = matrix[i][j];
-        }
-    }
+            copy[i][j] = matrix[starting_index + i * size + j];
 }
 
-void inverse(float **matrix, float **inverse, int size)
+void inverse(float *matrix, float *inv, int size, int starting_index)
 {
     float **input_matrix = (float **)malloc(size * sizeof(float *));
     for (int i = 0; i < size; i++)
         input_matrix[i] = (float *)malloc(size * sizeof(float));
 
-    copy_matrix(input_matrix, matrix, size);
+    float **inverse = (float **)malloc(D * sizeof(float *));
+    for (int i = 0; i < D; i++)
+        inverse[i] = (float *)malloc(D * sizeof(float));
+
+    copy_matrix(input_matrix, matrix, size, starting_index);
 
     generate_identity(inverse, size);
     for (int i = 0; i < size; i++)
@@ -146,10 +88,16 @@ void inverse(float **matrix, float **inverse, int size)
         }
     }
 
+    for (int i = 0; i < D; i++)
+        for (int j = 0; j < D; j++)
+            inv[starting_index + i * D + j] = inverse[i][j];
+        
     for (int i = 0; i < size; i++)
     {
+        free(inverse[i]);
         free(input_matrix[i]);
-    }
+    } 
+    free(inverse);
     free(input_matrix);
 }
 
@@ -157,15 +105,13 @@ void inverse(float **matrix, float **inverse, int size)
     Function that performs matrix vector multiplication
     and stores the result in the res vector passed as an argument.
 */
-void matmul(float **mat, float *vec, float *res)
+void matmul(float *mat, float *vec, float *res, int starting_index)
 {
     for (int i = 0; i < D; i++)
     {
         res[i] = 0;
         for (int j = 0; j < D; j++)
-        {
-            res[i] += mat[i][j] * (float)vec[j];
-        }
+            res[i] += mat[starting_index + i * D + j] * (float)vec[j];
     }
 }
 
