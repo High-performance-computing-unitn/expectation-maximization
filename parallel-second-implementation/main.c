@@ -28,10 +28,12 @@ int main(int argc, char *argv[])
     max_iter = atoi(argv[4]);
     char *FILE_PATH = argv[5];
 
+    if(my_rank == MASTER_PROCESS)
+        printf("Execution for dataset with %d samples, %d gaussians and %d dimensions\n", N, K, D);
+
     last_process = world_size - 1;
 
     int process_samples = N / world_size;
-    int sample_size = process_samples + 1;
 
     /*
         READING FROM FILE
@@ -40,14 +42,12 @@ int main(int argc, char *argv[])
 
     char **rows = (char **)malloc(MAX_LINES * sizeof(char *)); // allocate memory for array of rows of the file
 
-    Sample *samples = (Sample *)malloc(sample_size * sizeof(Sample)); // allocate an array of samples
+    Sample *samples = (Sample *)malloc((process_samples + 1) * sizeof(Sample)); // allocate an array of samples
 
     fill_matrix(samples, rows, process_samples, my_rank, FILE_PATH); // read the file and store its content
 
     for (int i = 0; i < MAX_LINES; i++)
-    {
         free(rows[i]);
-    }
     free(rows);
 
     finish = MPI_Wtime();

@@ -18,12 +18,9 @@ float gaussian(Sample x, float *mean, float *cov, int j)
         x_u[i] = x.dimensions[i] - mean[starting_index_mean + i];
 
     // calculate the inverse of the covariance matrix and the determinant
-    float det = 0;
-    float *inv = (float *)malloc(D * D * sizeof(float));
+    float det = determinant(cov, D, starting_index_cov);
 
-    /*
-    compute determinant
-    */
+    float *inv = (float *)malloc(D * D * sizeof(float));
 
     inverse(cov, inv, D, starting_index_cov);
 

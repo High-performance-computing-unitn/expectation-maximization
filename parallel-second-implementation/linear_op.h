@@ -3,6 +3,8 @@
 
 #include "constants.h"
 
+float determinant(float *m, int n, int starting_index);
+
 // calculate the inverse of matrix
 void inverse(float *input_matrix, float *inverse, int size, int starting_index);
 
