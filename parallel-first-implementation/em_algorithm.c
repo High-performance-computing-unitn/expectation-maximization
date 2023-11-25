@@ -79,9 +79,9 @@ void initialize(float *mean, float *cov, float *weights, int K, int D) {
 
 
 
-void initialize_parallel(float *X, float *mean, float *cov, float *weights, int my_rank, int N, int D, int K) {
+void initialize_parallel(float *X, float *mean, float *cov, float *weights, int my_rank, int N, int D, int K, char *FILE_PATH) {
     if (my_rank == 0) {
-        fill_matrix(X, N, D);
+        fill_matrix(X, N, D, FILE_PATH);
         standardize(X, N, D);
         initialize(mean, cov, weights, K, D);
     }
@@ -103,9 +103,9 @@ void divide_matrix_and_dist(float *X, float *local_examples, float *mean,
 
 
 void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
-                 float *p_val, int my_rank, int row_per_process, int N, int D, int K) {
+                 float *p_val, int my_rank, int row_per_process, int N, int D, int K, char *FILE_PATH) {
 
-    initialize_parallel(X, mean, cov, weights, my_rank, N, D, K);
+    initialize_parallel(X, mean, cov, weights, my_rank, N, D, K, FILE_PATH);
 
     // allocate memory for local matrix values
     float *local_examples = malloc((row_per_process * D) * sizeof(float ));

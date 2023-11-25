@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
     int K = atoi(argv[3]);
 
     int max_iter = atoi(argv[4]);
+    char *FILE_PATH = argv[5];
 
     float* examples = malloc((N * D) * sizeof(float ));
 
@@ -37,7 +38,7 @@ int main(int argc, char *argv[]) {
     const int row_per_process = N / comm_sz;
 
     em_parallel(max_iter, examples, mean, covariance,
-                weights, p_val, my_rank, row_per_process, N, D, K);
+                weights, p_val, my_rank, row_per_process, N, D, K, FILE_PATH);
 
     // uncomment to print the result of the algorithm
     if (my_rank == 0) {
