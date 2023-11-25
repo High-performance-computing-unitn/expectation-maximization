@@ -11,8 +11,8 @@
 #include "reader.h"
 
 int main(int argc, char *argv[]) {
-    int comm_sz;
-    int my_rank;
+    int comm_sz, my_rank;
+    double start, finish;
 
     MPI_Init(NULL, NULL);
 
@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) {
     int N = atoi(argv[1]);
     int D = atoi(argv[2]);
     int K = atoi(argv[3]);
-
     int max_iter = atoi(argv[4]);
     char *FILE_PATH = argv[5];
 
@@ -37,9 +36,14 @@ int main(int argc, char *argv[]) {
 
     const int row_per_process = N / comm_sz;
 
+    start = MPI_Wtime();
+
     em_parallel(max_iter, examples, mean, covariance,
                 weights, p_val, my_rank, row_per_process, N, D, K, FILE_PATH);
 
+    finish = MPI_Wtime();
+    printf("Process %d read file succesfully in: %e seconds\n", my_rank, finish - start);
+    
     // uncomment to print the result of the algorithm
     if (my_rank == 0) {
         for (int i = 0; i < N; i++) {
