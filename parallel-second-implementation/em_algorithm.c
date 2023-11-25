@@ -13,10 +13,8 @@ void em_train(Sample *samples, float *mean, float *cov, float *weights, float *p
     float *local_p_val = (float *)malloc(process_samples * K * sizeof(float));
 
     for (int i = 0; i < max_iter; i++)
-    {
         e_step(samples, mean, cov, weights, local_p_val, process_samples);
         m_step_parallel(local_p_val, samples, mean, cov, weights, process_rank, process_samples);
-    }
 
     /*
         TO DO GATHER P VALUES
@@ -32,12 +30,8 @@ void em_train(Sample *samples, float *mean, float *cov, float *weights, float *p
 void init_mean(float *mean)
 {
     for (int k = 0; k < K; k++)
-    {
         for (int d = 0; d < D; d++)
-        {
             mean[k * D + d] = (rand() % 10 + 1) * 0.1;
-        }
-    }
 }
 
 /*
@@ -48,22 +42,12 @@ void init_mean(float *mean)
 void init_cov(float *cov)
 {
     for (int k = 0; k < K; k++)
-    {
         for (int r = 0; r < D; r++)
-        {
             for (int c = 0; c < D; c++)
-            {
                 if (r == c)
-                {
                     cov[k * D * D + r * D + c] = (rand() % 10 + 1) * 0.1;
-                }
                 else
-                {
                     cov[k * D * D + r * D + c] = 1e-6;
-                }
-            }
-        }
-    }
 }
 
 /*
@@ -74,9 +58,7 @@ void init_cov(float *cov)
 void init_weights(float *weights)
 {
     for (int k = 0; k < K; k++)
-    {
         weights[k] = 1.f / K;
-    }
 }
 
 /*

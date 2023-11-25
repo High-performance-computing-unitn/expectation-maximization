@@ -3,7 +3,7 @@
 
 #include "constants.h"
 
-void em_train(Sample *Samples, float *mean, float *cov, float *weights, float *p_val, int process_samples, int process_rank);
+void em_train(Sample *samples, float *mean, float *cov, float *weights, float *p_val, int process_samples, int process_rank);
 void initialize(float *mean, float *cov, float *weights);
 
 #endif

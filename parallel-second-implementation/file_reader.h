@@ -3,6 +3,6 @@
 
 #include "constants.h"
 
-void fill_matrix(Sample *dataset, char **rows, int process_samples, int process_rank, char *FILE_PATH);
+void fill_matrix(Sample *samples, char **rows, int process_samples, int process_rank, char *FILE_PATH);
 
 #endif 

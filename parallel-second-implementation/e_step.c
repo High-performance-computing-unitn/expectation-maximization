@@ -55,12 +55,10 @@ void reset_cov(float *cov, int j)
     int starting_index = j * D * D;
     for (int r = 0; r < D; r++)
         for (int c = 0; c < D; c++)
-        {
             if (r == c)
                 cov[starting_index + r * D + c] = (rand() % 10 + 1) * 0.1;
             else
                 cov[starting_index + r * D + c] = 1e-6;
-        }
 }
 
 /*
@@ -102,11 +100,12 @@ void e_step(Sample *X, float *mean, float *cov, float *weights, float *p_val, in
         if (p_x == 0) // assign small value to avoid zero division
             p_x = 1e-5;
 
-        for (int j = 0; j < K; j++)
-        { // calculate probability for each cluster assignment
+        for (int j = 0; j < K; j++) // calculate probability for each cluster assignment
+        {
             float pij = gaussians[j] / p_x;
             p_val[i * K + j] = pij;
         }
+        
         free(gaussians);
     }
 }

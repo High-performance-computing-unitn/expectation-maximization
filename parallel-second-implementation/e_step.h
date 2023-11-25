@@ -4,6 +4,6 @@
 #include "constants.h"
 
 // run expectation step
-void e_step(Sample *X, float *mean, float *cov, float *weights, float *p_val, int row_per_process);
+void e_step(Sample *samples, float *mean, float *cov, float *weights, float *p_val, int row_per_process);
 
 #endif 

@@ -91,12 +91,12 @@ void inverse(float *matrix, float *inv, int size, int starting_index)
     for (int i = 0; i < D; i++)
         for (int j = 0; j < D; j++)
             inv[i * D + j] = inverse[i][j];
-        
+
     for (int i = 0; i < size; i++)
     {
         free(inverse[i]);
         free(input_matrix[i]);
-    } 
+    }
     free(inverse);
     free(input_matrix);
 }
@@ -123,9 +123,7 @@ float dotProduct(float *a, float *b)
 {
     float result = 0.0;
     for (int i = 0; i < D; i++)
-    {
         result += a[i] * b[i];
-    }
     return result;
 }
 
@@ -140,9 +138,7 @@ void standardize(Sample *data, int sample_size)
     {
         mean[j] = 0.0;
         for (int i = 0; i < sample_size; i++)
-        {
             mean[j] += data[i].dimensions[j];
-        }
         mean[j] /= sample_size;
     }
 
@@ -152,20 +148,15 @@ void standardize(Sample *data, int sample_size)
     {
         stdDev[j] = 0.0;
         for (int i = 0; i < sample_size; i++)
-        {
             stdDev[j] += pow(data[i].dimensions[j] - mean[j], 2);
-        }
         stdDev[j] = sqrt(stdDev[j] / (sample_size - 1));
     }
 
     // Perform standardization
     for (int i = 0; i < sample_size; i++)
-    {
         for (int j = 0; j < D; j++)
-        {
             data[i].dimensions[j] = (data[i].dimensions[j] - mean[j]) / stdDev[j];
-        }
-    }
+
     free(mean);
     free(stdDev);
 }

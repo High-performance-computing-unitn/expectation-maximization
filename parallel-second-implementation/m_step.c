@@ -25,16 +25,10 @@ void calc_sum_pij(float *p_val, float *res, int process_samples)
 */
 void calc_mean_num(Sample *samples, float *p_val, float *res, int process_samples)
 {
-    for (int k = 0; k < K; k++)
-    { // iterate over clusters
-        for (int i = 0; i < process_samples; i++)
-        { // iterate over training examples
-            for (int j = 0; j < D; j++)
-            { // iterate over dimensions
+    for (int k = 0; k < K; k++)                   // iterate over clusters
+        for (int i = 0; i < process_samples; i++) // iterate over training examples
+            for (int j = 0; j < D; j++)           // iterate over dimensions
                 res[k * D + j] += p_val[i * K + k] * samples[i].dimensions[j];
-            }
-        }
-    }
 }
 
 /*
@@ -50,26 +44,17 @@ void calc_covariance_num(Sample *samples, float *mean, float *cov, float *p_val,
 
     float offset = 1e-6;
 
-    for (int k = 0; k < K; k++)
-    { // iterate over clusters
-        for (int i = 0; i < process_samples; i++)
-        { // iterate over training examples
-            for (int r = 0; r < D; r++)
-            { // iterate over row dimension
-                for (int c = 0; c < D; c++)
-                { // iterate over column dimension
-
+    for (int k = 0; k < K; k++)                   // iterate over clusters
+        for (int i = 0; i < process_samples; i++) // iterate over training examples
+            for (int r = 0; r < D; r++)           // iterate over row dimension
+                for (int c = 0; c < D; c++)       // iterate over column dimension
+                {
                     // calculate the values of covariance matrix of cluster 'k' row 'r' and column 'c'
                     cov[k * D * D + c * D + r] += p_val[i * K + k] * (samples[i].dimensions[r] - mean[k * D + r]) * (samples[i].dimensions[c] - mean[k * D + c]);
 
-                    if (r == c)
-                    { // add small offset if this is the main diagonal to avoid the singularity problem
-                        cov[k * D * D + c * D + r] += offset;
-                    }
+                    if (r == c) 
+                        cov[k * D * D + c * D + r] += offset; // add small offset if this is the main diagonal to avoid the singularity problem
                 }
-            }
-        }
-    }
 }
 
 /*
@@ -78,13 +63,8 @@ void calc_covariance_num(Sample *samples, float *mean, float *cov, float *p_val,
 void m_step_mean(float *mean, float *mean_num, float *sum_pij)
 {
     for (int k = 0; k < K; k++)
-    {
-        for (int j = 0; j < D; j++)
-        {
-            // calculate the value of mean of cluster 'k' at the dimension 'j'
-            mean[k * D + j] = mean_num[k * D + j] / sum_pij[k];
-        }
-    }
+        for (int j = 0; j < D; j++) 
+            mean[k * D + j] = mean_num[k * D + j] / sum_pij[k]; // calculate the value of mean of cluster 'k' at the dimension 'j'
 }
 
 void parallel_sum_pij(float *local_p_val, float *sum_pi, int process_samples)
@@ -113,9 +93,7 @@ void parallel_mean(Sample *samples, float *local_p_val, float *sum_pi, float *me
 
     // update mean values
     if (process_rank == MASTER_PROCESS)
-    {
         m_step_mean(mean, total_mean_num, sum_pi);
-    }
 
     // broadcast mean values to all processes
     MPI_Bcast(mean, K * D, MPI_FLOAT, MASTER_PROCESS, MPI_COMM_WORLD);
@@ -129,16 +107,10 @@ void parallel_mean(Sample *samples, float *local_p_val, float *sum_pi, float *me
 */
 void m_step_covariance(float *cov, float *cov_num, float *sum_pij)
 {
-    for (int k = 0; k < K; k++)
-    { // iterate over clusters
-        for (int r = 0; r < D; r++)
-        { // iterate over dimensions
+    for (int k = 0; k < K; k++) // iterate over clusters
+        for (int r = 0; r < D; r++) // iterate over dimensions
             for (int c = 0; c < D; c++)
-            {
                 cov[k * D * D + r * D + c] = cov_num[k * D * D + r * D + c] / sum_pij[k];
-            }
-        }
-    }
 }
 
 void parallel_cov(Sample *samples, float *local_p_val, float *mean, float *sum_pi, float *cov, int process_rank, int process_samples)
@@ -170,13 +142,9 @@ void m_step_weights(float *sum_pij, float *weights)
 {
     float den = 0;
     for (int k = 0; k < K; k++)
-    {
         den += sum_pij[k];
-    }
     for (int k = 0; k < K; k++)
-    {
         weights[k] = sum_pij[k] / den;
-    }
 }
 
 void parallel_weights(float *sum_pi, float *weights, int process_rank)

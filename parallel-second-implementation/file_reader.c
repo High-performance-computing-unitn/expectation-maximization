@@ -3,16 +3,13 @@
 #include <string.h>
 #include "constants.h"
 
-int N, D, K;
-
 char *strdup(const char *str)
 {
     int n = strlen(str) + 1;
     char *dup = malloc(n);
     if (dup)
-    {
         strcpy(dup, str);
-    }
+
     return dup;
 }
 

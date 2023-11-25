@@ -13,6 +13,6 @@ void matmul(float *mat, float *vec, float *res);
 float dotProduct(float *a, float *b);
 
 // standardize the training data
-void standardize(Sample *data, int sample_size);
+void standardize(Sample *samples, int sample_size);
 
 #endif
