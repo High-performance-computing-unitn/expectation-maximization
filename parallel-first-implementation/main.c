@@ -4,6 +4,7 @@
 #include <mpi.h>
 
 #include "utils.h"
+#include "constants.h"
 #include "em_algorithm.h"
 #include "linear_op.h"
 #include "e_step.h"
