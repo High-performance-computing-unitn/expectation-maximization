@@ -3,6 +3,7 @@
 
 #include "linear_op.h"
 #include "constants.h"
+#include "utils.h"
 
 
 /*
@@ -67,20 +68,6 @@ void reset_mean(float *mean, int k, int D) {
     int start_ind = k * D;
     for (int d = 0; d < D; d++) {
         mean[start_ind + d] = (rand() % 10 + 1) * 0.1;
-    }
-}
-
-
-void get_cluster_mean_cov(float *mean, float *cov, float *m_res, float *cov_res, int k, int D) {
-    int start_ind = k * D * D;
-    for (int r = 0; r < D; r++) {
-        for (int d = 0; d < D; d ++) {
-            cov_res[r * D + d] = cov[start_ind + r * D + d];
-        }
-    }
-
-    for (int d = 0; d < D; d ++) {
-        m_res[d] = mean[k * D + d];
     }
 }
 

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <mpi.h>
+#include <math.h>
 #include <stdio.h>
 
 #include "constants.h"
@@ -7,7 +8,7 @@
 #include "e_step.h"
 #include "linear_op.h"
 #include "reader.h"
-
+#include "utils.h"
 
 /*
    The function that iteratively run expectation and maximization steps
@@ -89,11 +90,12 @@ void initialize_parallel(float *X, float *mean, float *cov, float *weights, int 
 
 
 void divide_matrix_and_dist(float *X, float *local_examples, float *mean,
-                            float *cov, float *weights, int row_per_process, int N, int D, int K) {
-    const int el_per_process = row_per_process * D;
+                            float *cov, float *weights, int* data_count, int* data_displ,
+                            int my_rank, int N, int D, int K) {
 
     // scatter matrix values to processes
-    MPI_Scatter(X, el_per_process, MPI_FLOAT, local_examples, el_per_process, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(X, data_count, data_displ, MPI_FLOAT, local_examples,
+                 data_count[my_rank], MPI_FLOAT, 0, MPI_COMM_WORLD);
 
     // broadcast mean, covariance, weights to all processes
     MPI_Bcast(mean, K*D, MPI_FLOAT, 0, MPI_COMM_WORLD);
@@ -102,29 +104,93 @@ void divide_matrix_and_dist(float *X, float *local_examples, float *mean,
 }
 
 
+float log_likelihood(float *X, float *mean, float *cov, float *weights, int K, int N, int D) {
+    float log_l = 0;
+
+    for (int i = 0; i < N * D; ) { // iterate over the training examples
+
+        float *row = (float *)malloc(D * sizeof(float));
+        for (int col = 0; col < D; col++) {
+            row[col] = X[i + col];
+        }
+
+        float s = 0;
+        for (int j = 0; j < K; j++) {
+            float *c = (float *) malloc(D*D *sizeof(float));
+            float *m = (float *) malloc(D *sizeof(float));
+            get_cluster_mean_cov(mean, cov, m, c, j, D);
+
+            float g = gaussian(row, m, c, D) * weights[j];
+            if (!(g==g)) { // g is Nan - matrix is singular
+                continue;
+            }
+            s += g;
+
+            free(c);
+            free(m);
+        }
+        free(row);
+
+        log_l += log(s);
+
+        i += D;
+    }
+    return log_l;
+}
+
+
 void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
-                 float *p_val, int my_rank, int row_per_process, int N, int D, int K, char *FILE_PATH) {
+                 float *p_val, int my_rank, int* data_count, int* data_displ,
+                 int* p_count, int* p_displ, int N, int D, int K, char *FILE_PATH) {
 
     initialize_parallel(X, mean, cov, weights, my_rank, N, D, K, FILE_PATH);
 
-    // allocate memory for local matrix values
-    float *local_examples = malloc((row_per_process * D) * sizeof(float ));
-    divide_matrix_and_dist(X, local_examples, mean, cov, weights, row_per_process, N, D, K);
+    int row_per_process = data_count[my_rank] / D;
 
-    float* local_p_val = malloc((row_per_process * K) * sizeof(float ));
+    // allocate memory for local matrix values
+    float *local_examples = malloc(data_count[my_rank] * sizeof(float ));
+    divide_matrix_and_dist(X, local_examples, mean, cov, weights, data_count, data_displ, my_rank, N, D, K);
+
+    float* local_p_val = malloc(p_count[my_rank] * sizeof(float ));
+
+    // calc log likelihood
+    int patience = 5;
+    float local_log_l = log_likelihood(local_examples, mean, cov, weights, K, row_per_process, D);
+    float log_l;
+    MPI_Allreduce(&local_log_l, &log_l, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+
+    if (my_rank == 0) {
+        printf("Log likelihood: %f\n", log_l);
+    }
 
     for (int i = 0; i < n_iter; i++) {
         // E STEP
         // each process computes e_step on its local dataset
         e_step(local_examples, mean, cov, weights, local_p_val, K, row_per_process, D);
-
         m_step_parallel(local_p_val, local_examples, mean, cov, weights, my_rank, row_per_process, K, D);
+
+        // calc log likelihood
+        float local_log_l = log_likelihood(local_examples, mean, cov, weights, K, row_per_process, D);
+        float log_l_next;
+        MPI_Allreduce(&local_log_l, &log_l_next, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+
+        if (my_rank == 0) {
+            printf("Log likelihood: %f\n", log_l);
+        }
+        if (roundf(log_l) == roundf(log_l_next)) {
+            if (patience == 0) {
+                break;
+            } else {
+                patience--;
+            }
+        }
+        log_l = log_l_next;
     }
     free(local_examples);
 
     // gather p_val from the processes
-    MPI_Gather(local_p_val, row_per_process * K, MPI_FLOAT, p_val,
-               row_per_process * K, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(local_p_val, p_count[my_rank], MPI_FLOAT, p_val,
+                p_count, p_displ, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
     free(local_p_val);
 }
