@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <mpi.h>
 #include "em_algorithm.h"
 #include "constants.h"
 #include "e_step.h"
@@ -16,9 +17,7 @@ void em_train(Sample *samples, float *mean, float *cov, float *weights, float *p
         e_step(samples, mean, cov, weights, local_p_val, process_samples);
         m_step_parallel(local_p_val, samples, mean, cov, weights, process_rank, process_samples);
 
-    /*
-        TO DO GATHER P VALUES
-    */
+    MPI_Gather(local_p_val, process_samples * K, MPI_FLOAT, p_val, process_samples * K, MPI_FLOAT, MASTER_PROCESS, MPI_COMM_WORLD);
 
     free(local_p_val);
 }

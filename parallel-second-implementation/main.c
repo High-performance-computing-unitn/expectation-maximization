@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     max_iter = atoi(argv[4]);
     char *FILE_PATH = argv[5];
 
-    if(my_rank == MASTER_PROCESS)
+    if (my_rank == MASTER_PROCESS)
         printf("Execution for dataset with %d samples, %d gaussians and %d dimensions\n", N, K, D);
 
     last_process = world_size - 1;
@@ -53,7 +53,6 @@ int main(int argc, char *argv[])
     finish = MPI_Wtime();
     printf("Process %d read file succesfully in: %e seconds\n", my_rank, finish - start);
 
-
     /*
         MEMORY ALLOCATION
     */
@@ -62,7 +61,7 @@ int main(int argc, char *argv[])
     float *mean = (float *)malloc(K * D * sizeof(float));
     float *covariance = (float *)malloc(K * D * D * sizeof(float));
     float *p_val = (float *)malloc(N * K * sizeof(float));
- 
+
     /*
         EM ALGORTIHM
     */
@@ -78,19 +77,21 @@ int main(int argc, char *argv[])
     finish = MPI_Wtime();
     printf("Process %d completed in: %e seconds\n", my_rank, finish - start);
 
-    // for (int i = 0; i < N; i++)
-    // {
-    //     for (int j = 0; j < K; j++)
-    //     {
-    //         printf("%f ", p_val[i * K + j]);
-    //     }
-    //     printf("\n");
-    // }
+    if (my_rank == MASTER_PROCESS)
+    {
+        for (int i = 0; i < N; i++)
+        {
+            for (int j = 0; j < K; j++)
+            {
+                printf("%f ", p_val[i * K + j]);
+            }
+            printf("\n");
+        }
+    }
 
     /*
         MEMORY FREE AND FINALIZATION
     */
-
     free(weights);
     free(mean);
     free(covariance);
