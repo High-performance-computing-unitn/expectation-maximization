@@ -7,4 +7,4 @@
 #PBS -q short_cpuQ
 
 module load mpich-3.2
-mpiexec -n 4 expectation-maximization/parallel-dynamic-test/parallelRun 800 5 4 10
+mpiexec -n 4 expectation-maximization/parallel-second-implementation/parallelRun 800 3 4 10 "expectation-maximization/data-generator/N800_K4_D3.csv"

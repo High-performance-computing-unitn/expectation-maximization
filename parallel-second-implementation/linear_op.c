@@ -26,9 +26,9 @@ void inverse(float *matrix, float *inv, int size, int starting_index)
     for (int i = 0; i < size; i++)
         input_matrix[i] = (float *)malloc(size * sizeof(float));
 
-    float **inverse = (float **)malloc(D * sizeof(float *));
-    for (int i = 0; i < D; i++)
-        inverse[i] = (float *)malloc(D * sizeof(float));
+    float **inverse = (float **)malloc(size * sizeof(float *));
+    for (int i = 0; i < size; i++)
+        inverse[i] = (float *)malloc(size * sizeof(float));
 
     copy_matrix(input_matrix, matrix, size, starting_index);
 
@@ -90,7 +90,7 @@ void inverse(float *matrix, float *inv, int size, int starting_index)
 
     for (int i = 0; i < D; i++)
         for (int j = 0; j < D; j++)
-            inv[starting_index + i * D + j] = inverse[i][j];
+            inv[i * D + j] = inverse[i][j];
         
     for (int i = 0; i < size; i++)
     {
@@ -105,13 +105,13 @@ void inverse(float *matrix, float *inv, int size, int starting_index)
     Function that performs matrix vector multiplication
     and stores the result in the res vector passed as an argument.
 */
-void matmul(float *mat, float *vec, float *res, int starting_index)
+void matmul(float *mat, float *vec, float *res)
 {
     for (int i = 0; i < D; i++)
     {
         res[i] = 0;
         for (int j = 0; j < D; j++)
-            res[i] += mat[starting_index + i * D + j] * (float)vec[j];
+            res[i] += mat[i * D + j] * (float)vec[j];
     }
 }
 

@@ -24,7 +24,7 @@ float gaussian(Sample x, float *mean, float *cov, int j)
     /*
     compute determinant
     */
-   
+
     inverse(cov, inv, D, starting_index_cov);
 
     // multiply (x-mean) and inverse of covariance
@@ -74,20 +74,6 @@ void reset_mean(float *mean, int j)
         mean[starting_index + d] = (rand() % 10 + 1) * 0.1;
 }
 
-void copy_values(float *mean_copy, float *mean, float **cov_copy, float *cov, int index)
-{
-    int starting_index_mean = index * D;
-
-    for (int i = 0; i < D; i++)
-        mean_copy[i] = mean[starting_index_mean + i];
-
-    int starting_index_cov = starting_index_mean * D;
-
-    for (int i = 0; i < D; i++)
-        for (int j = 0; j < D; j++)
-            cov_copy[i][j] = cov[starting_index_cov + i * D + j];
-}
-
 /*
     Function that performs the e-step of the algorithm.
     Calculates the soft cluster assignment of each training example.
@@ -102,7 +88,6 @@ void e_step(Sample *X, float *mean, float *cov, float *weights, float *p_val, in
 
         for (int j = 0; j < K; j++)
         {
-            // copy_values(mean_row, mean, cov_sub_mat, cov, j);
             float g = gaussian(X[i], mean, cov, j) * weights[j]; // calculate pdf
             if (!(g == g))
             {                                                  // g is Nan - matrix is singular
@@ -113,10 +98,9 @@ void e_step(Sample *X, float *mean, float *cov, float *weights, float *p_val, in
             gaussians[j] = g; // save pdf
             p_x += g;
         }
-        if (p_x == 0)
-        { // assign small value to avoid zero division
+
+        if (p_x == 0) // assign small value to avoid zero division
             p_x = 1e-5;
-        }
 
         for (int j = 0; j < K; j++)
         { // calculate probability for each cluster assignment
