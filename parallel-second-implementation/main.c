@@ -77,17 +77,17 @@ int main(int argc, char *argv[])
     finish = MPI_Wtime();
     printf("Process %d completed in: %e seconds\n", my_rank, finish - start);
 
-    if (my_rank == MASTER_PROCESS)
-    {
-        for (int i = 0; i < N; i++)
-        {
-            for (int j = 0; j < K; j++)
-            {
-                printf("%f ", p_val[i * K + j]);
-            }
-            printf("\n");
-        }
-    }
+    // if (my_rank == MASTER_PROCESS)
+    // {
+    //     for (int i = 0; i < N; i++)
+    //     {
+    //         for (int j = 0; j < K; j++)
+    //         {
+    //             printf("%f ", p_val[i * K + j]);
+    //         }
+    //         printf("\n");
+    //     }
+    // }
 
     /*
         MEMORY FREE AND FINALIZATION

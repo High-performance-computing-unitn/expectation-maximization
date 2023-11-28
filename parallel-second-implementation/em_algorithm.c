@@ -5,6 +5,29 @@
 #include "e_step.h"
 #include "m_step.h"
 
+
+// float log_likelihood(Sample *X, float *mean, float *cov, float *weights, int process_samples)
+// {
+//     float log_l = 0, s, g;
+
+//     for (int i = 0; i < process_samples; i++) // iterate over the training examples
+//     {
+//         s = 0;
+//         for (int j = 0; j < K; j++)
+//         {
+//             g = gaussian(X[i], mean, cov, j) * weights[j];
+
+//             if (!(g == g)) // g is Nan - matrix is singular
+//                 continue;
+//             s += g;
+//         }
+
+//         log_l += log(s);
+//     }
+//     return log_l;
+// }
+
+
 /*
    The function that iteratively run expectation and maximization steps
    for n number of times.
