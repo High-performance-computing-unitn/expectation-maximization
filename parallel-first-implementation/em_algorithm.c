@@ -30,12 +30,8 @@ void em_train(int n_iter, float *X, float *mean, float *cov, float *weights, flo
 void init_mean(float *mean, int K, int D)
 {
     for (int k = 0; k < K; k++)
-    {
         for (int d = 0; d < D; d++)
-        {
             mean[k * D + d] = (rand() % 10 + 1) * 0.1;
-        }
-    }
 }
 
 /*
@@ -49,19 +45,13 @@ void init_cov(float *cov, int K, int D)
     {
         int start_ind = k * D * D;
         for (int r = 0; r < D; r++)
-        {
             for (int c = 0; c < D; c++)
             {
                 if (r == c)
-                {
                     cov[start_ind + r * D + c] = (rand() % 10 + 1) * 0.1;
-                }
                 else
-                {
                     cov[start_ind + r * D + c] = 1e-6;
-                }
             }
-        }
     }
 }
 
@@ -73,9 +63,7 @@ void init_cov(float *cov, int K, int D)
 void init_weights(float *weights, int K)
 {
     for (int k = 0; k < K; k++)
-    {
         weights[k] = 1.f / K;
-    }
 }
 
 /*
@@ -122,9 +110,7 @@ float log_likelihood(float *X, float *mean, float *cov, float *weights, int K, i
 
         float *row = (float *)malloc(D * sizeof(float));
         for (int col = 0; col < D; col++)
-        {
             row[col] = X[i + col];
-        }
 
         float s = 0;
         for (int j = 0; j < K; j++)
@@ -134,10 +120,8 @@ float log_likelihood(float *X, float *mean, float *cov, float *weights, int K, i
             get_cluster_mean_cov(mean, cov, m, c, j, D);
 
             float g = gaussian(row, m, c, D) * weights[j];
-            if (!(g == g))
-            { // g is Nan - matrix is singular
+            if (!(g == g)) // g is Nan - matrix is singular
                 continue;
-            }
             s += g;
 
             free(c);
@@ -176,7 +160,6 @@ void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
     FILE *log_file;
     if (my_rank == 0)
     {
-        //printf("Log likelihood: %f\n", log_l);
         log_file = fopen(log_filepath, "a");
         if (log_file == NULL)
         {
@@ -199,26 +182,20 @@ void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
         MPI_Allreduce(&local_log_l, &log_l_next, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
 
         if (my_rank == 0)
-        {
             fprintf(log_file, "%f\n", log_l);
-            //printf("Log likelihood: %f\n", log_l);
-        }
+
         if (roundf(log_l) == roundf(log_l_next))
         {
             if (patience == 0)
-            {
                 break;
-            }
             else
-            {
                 patience--;
-            }
         }
         log_l = log_l_next;
     }
     free(local_examples);
 
-    if(my_rank == 0)
+    if (my_rank == 0)
         fclose(log_file);
 
     // gather p_val from the processes

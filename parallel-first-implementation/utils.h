@@ -1,7 +1,3 @@
-//
-// Created by Olha Khomyn on 25/11/23.
-//
-
 #ifndef EM_PROJECT_UTILS_H
 #define EM_PROJECT_UTILS_H
 
