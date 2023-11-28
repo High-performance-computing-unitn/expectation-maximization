@@ -39,14 +39,15 @@ int main(int argc, char *argv[])
     end = clock();
     printf("Completed in: %f seconds with: %d samples\n", (double)(end - start) / CLOCKS_PER_SEC, N);
 
-    for (int i = 0; i < N; i++)
-    {
-        for (int j = 0; j < K; j++)
-        {
-            printf("%f ", p_val[i * K + j]);
-        }
-        printf("\n");
-    }
+    //uncomment to print results of the algorithm
+    // for (int i = 0; i < N; i++)
+    // {
+    //     for (int j = 0; j < K; j++)
+    //     {
+    //         printf("%f ", p_val[i * K + j]);
+    //     }
+    //     printf("\n");
+    // }
 
     free(weights);
     free(mean);

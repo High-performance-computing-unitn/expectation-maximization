@@ -100,12 +100,8 @@ void inverse(float *A, float *inv, float *det, int n)
 
     // Find the inverse using the formula "inverse(A) = adj(A)/det(A)"
     for (int i = 0; i < n; i++)
-    {
         for (int j = 0; j < n; j++)
-        {
             inv[i * n + j] = adj[j * n + i] / *det;
-        }
-    }
 
     free(adj);
 }
@@ -120,9 +116,7 @@ void matmul(float *mat, float *vec, float *res, int D)
     {
         res[i] = 0;
         for (int j = 0; j < D; j++)
-        {
             res[i] += mat[i * D + j] * (float)vec[j];
-        }
     }
 }
 
@@ -134,9 +128,7 @@ float dotProduct(float *a, float *b, int D)
 {
     float result = 0.0;
     for (int i = 0; i < D; i++)
-    {
         result += a[i] * b[i];
-    }
     return result;
 }
 
@@ -151,9 +143,7 @@ void standardize(float *data, int N, int D)
     {
         mean[j] = 0.0;
         for (int i = 0; i < N; i++)
-        {
             mean[j] += data[i * D + j];
-        }
         mean[j] /= N;
     }
 
@@ -163,20 +153,15 @@ void standardize(float *data, int N, int D)
     {
         stdDev[j] = 0.0;
         for (int i = 0; i < N; i++)
-        {
             stdDev[j] += pow(data[i * D + j] - mean[j], 2);
-        }
         stdDev[j] = sqrt(stdDev[j] / (N - 1));
     }
 
     // Perform standardization
     for (int i = 0; i < N; i++)
-    {
         for (int j = 0; j < D; j++)
-        {
             data[i * D + j] = (data[i * D + j] - mean[j]) / stdDev[j];
-        }
-    }
+
     free(mean);
     free(stdDev);
 }

@@ -8,9 +8,7 @@ char *strdup(const char *str)
     int n = strlen(str) + 1;
     char *dup = malloc(n);
     if (dup)
-    {
         strcpy(dup, str);
-    }
     return dup;
 }
 
@@ -35,7 +33,7 @@ void readFile(char *rows[MAX_ROW_LEN], char *FILE_PATH)
     else
     {
         printf("The file does not exist!");
-        exit(0);
+        exit(1);
     }
 }
 
