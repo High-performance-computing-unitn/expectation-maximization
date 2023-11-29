@@ -26,7 +26,17 @@ int main(int argc, char *argv[])
     srand(time(NULL));
 
     if (my_rank == 0)
+    {
         snprintf(log_filepath, sizeof(log_filepath), "expectation-maximization/parallel-first-implementation/log-likelihood-results/N%s_K%s_D%s.txt", argv[1], argv[3], argv[2]);
+        FILE *log_file = fopen(log_filepath, "w");
+        if (log_file == NULL)
+        {
+            printf("Error opening the file!");
+            exit(1);
+        }
+        fprintf(log_file, ""); //cleanup file on start
+        fclose(log_file);
+    }
 
     int N = atoi(argv[1]);
     int D = atoi(argv[2]);

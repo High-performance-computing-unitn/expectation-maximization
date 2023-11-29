@@ -15,7 +15,15 @@ int main(int argc, char *argv[])
     srand(time(NULL));
 
     snprintf(log_filepath, sizeof(log_filepath), "expectation-maximization/serial-version/log-likelihood-results/N%s_K%s_D%s.txt", argv[1], argv[3], argv[2]);
-
+    FILE *log_file = fopen(log_filepath, "w");
+    if (log_file == NULL)
+    {
+        printf("Error opening the file!");
+        exit(1);
+    }
+    fprintf(log_file, ""); // cleanup file on start
+    fclose(log_file);
+    
     int N = atoi(argv[1]);
     int D = atoi(argv[2]);
     int K = atoi(argv[3]);
@@ -43,15 +51,15 @@ int main(int argc, char *argv[])
     end = clock();
     printf("Completed in: %f seconds with: %d samples\n", (double)(end - start) / CLOCKS_PER_SEC, N);
 
-    //uncomment to print results of the algorithm
-    // for (int i = 0; i < N; i++)
-    // {
-    //     for (int j = 0; j < K; j++)
-    //     {
-    //         printf("%f ", p_val[i * K + j]);
-    //     }
-    //     printf("\n");
-    // }
+    // uncomment to print results of the algorithm
+    //  for (int i = 0; i < N; i++)
+    //  {
+    //      for (int j = 0; j < K; j++)
+    //      {
+    //          printf("%f ", p_val[i * K + j]);
+    //      }
+    //      printf("\n");
+    //  }
 
     free(weights);
     free(mean);
