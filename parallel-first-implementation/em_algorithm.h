@@ -1,8 +1,6 @@
 #ifndef EM_PROJECT_EM_ALGORITHM_H
 #define EM_PROJECT_EM_ALGORITHM_H
 
-#include "constants.h"
-
 // initialize initial values of mean, covariance and weights
 void initialize(float *mean, float *cov, float *weights, int K, int D);
 

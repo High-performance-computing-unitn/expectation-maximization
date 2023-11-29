@@ -1,29 +1,25 @@
+#include <math.h>
+#include <stdlib.h>
 /*
  * Code for matrix inverse taken from
  * https://www.geeksforgeeks.org/adjoint-inverse-matrix/
  */
 
-#include <math.h>
-#include <stdlib.h>
-
 void getCofactor(float *A, float *temp, int p, int q, int n)
 {
     int i = 0, j = 0;
 
-    // Looping for each element of the matrix
-    for (int row = 0; row < n; row++)
+    for (int row = 0; row < n; row++) // Looping for each element of the matrix
     {
         for (int col = 0; col < n; col++)
         {
-            // Copying into the temporary matrix only those
-            // elements that are not in the given row and column
+            // Copying into the temporary matrix only those elements that are not in the given row and column
             if (row != p && col != q)
             {
                 temp[i * (n - 1) + j] = A[row * n + col];
                 j++;
 
-                // Row is filled, so increase row index and
-                // reset col index
+                // Row is filled, so increase row index and reset col index
                 if (j == n - 1)
                 {
                     j = 0;
@@ -80,12 +76,10 @@ void adjoint(float *A, float *adj, int n)
             // Get the cofactor of A[i][j]
             getCofactor(A, temp, i, j, n);
 
-            // Sign of adj[j][i] is positive if the sum of row
-            // and column indexes is even.
+            // Sign of adj[j][i] is positive if the sum of row and column indexes is even.
             sign = ((i + j) % 2 == 0) ? 1 : -1;
 
-            // Interchange rows and columns to get the
-            // transpose of the cofactor matrix
+            // Interchange rows and columns to get the transpose of the cofactor matrix
             adj[j * n + i] = (sign) * (determinant(temp, n - 1));
         }
     }

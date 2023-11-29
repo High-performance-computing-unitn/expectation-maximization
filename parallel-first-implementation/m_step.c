@@ -2,14 +2,13 @@
 #include <stdlib.h>
 
 /*
-    For each cluster it calculates the sum of probabilities
-    of assignment to this cluster.
+    For each cluster it calculates the sum of probabilities of assignment to this cluster.
     Stores the result in res vector passed as a parameter.
 */
 void calc_sum_pij(float *p_val, float *res, int K, int N)
 {
-    for (int k = 0; k < K; k++)
-    { // iterate over clusters
+    for (int k = 0; k < K; k++) // iterate over clusters
+    {
         float s = 0;
         for (int i = 0; i < N; i++) // iterate over training examples
             s += p_val[i * K + k];  // add probability of assignment of example 'i' to cluster 'k'
@@ -97,6 +96,9 @@ void m_step_weights(float *sum_pij, float *weights, int K)
         weights[k] = sum_pij[k] / den;
 }
 
+/*
+    Function that computes the m step.
+*/
 void m_step(float *X, float *mean, float *cov, float *weights, float *p_val, int K, int N, int D)
 {
     float *sum_pij = (float *)malloc(K * sizeof(float));
@@ -132,7 +134,6 @@ void parallel_mean(float *local_examples, float *local_p_val, float *sum_pi,
                    float *mean, int my_rank, int row_per_process, int K, int D)
 {
     // each process calculate mean numerator of its local examples
-
     float *local_mean_num = malloc(K * D * sizeof(float));
     calc_mean_num(local_examples, local_p_val, local_mean_num, K, row_per_process, D);
 

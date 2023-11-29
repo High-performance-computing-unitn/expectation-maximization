@@ -1,8 +1,6 @@
 #ifndef EM_PROJECT_M_STEP_H
 #define EM_PROJECT_M_STEP_H
 
-#include "constants.h"
-
 // run maximization step
 void m_step(float *X, float *mean, float *cov, float *weights, float *p_val, int K, int N, int D);
 

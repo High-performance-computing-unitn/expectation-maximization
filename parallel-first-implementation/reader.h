@@ -1,8 +1,7 @@
 #ifndef EM_PROJECT_READER_H
 #define EM_PROJECT_READER_H
 
-#include "constants.h"
-
+// populate the matrix of samples
 void fill_matrix(float* mat, int N, int D, char *FILE_PATH);
 
 

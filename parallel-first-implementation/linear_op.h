@@ -2,7 +2,7 @@
 #define EM_PROJECT_LINEAR_OP_H
 
 // calculate the inverse of matrix
-void inverse(float *A, float *inv, float *det, int n); // Function to calculate and store inverse
+void inverse(float *A, float *inv, float *det, int n); 
 
 // calculate matrix-vector multiplication
 void matmul(float *mat, float *vec, float *res, int D);

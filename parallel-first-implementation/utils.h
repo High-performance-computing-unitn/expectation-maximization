@@ -1,8 +1,10 @@
 #ifndef EM_PROJECT_UTILS_H
 #define EM_PROJECT_UTILS_H
 
+//copy values of mean and covariance
 void get_cluster_mean_cov(float *mean, float *cov, float *m_res, float *cov_res, int k, int D);
 
+// divide the matrix for each process
 void divide_rows(int* data_count, int* data_displ, int* p_count, int* p_displ,
                  int N, int D, int K, int comm_sz);
 

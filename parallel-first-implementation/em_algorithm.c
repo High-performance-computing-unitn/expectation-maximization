@@ -57,8 +57,7 @@ void init_cov(float *cov, int K, int D)
 
 /*
     The function that initializes the initial values of the weights.
-    All clusters will have equal weight initially equal to 1 / K,
-    where K - number of clusters.
+    All clusters will have equal weight initially equal to 1 / K, where K - number of clusters.
 */
 void init_weights(float *weights, int K)
 {
@@ -101,13 +100,15 @@ void divide_matrix_and_dist(float *X, float *local_examples, float *mean,
     MPI_Bcast(weights, K, MPI_FLOAT, 0, MPI_COMM_WORLD);
 }
 
+/*
+    Function that computes the log likelihood to check for convergence
+*/
 float log_likelihood(float *X, float *mean, float *cov, float *weights, int K, int N, int D)
 {
     float log_l = 0;
 
-    for (int i = 0; i < N * D;)
-    { // iterate over the training examples
-
+    for (int i = 0; i < N * D;) // iterate over the training examples
+    { 
         float *row = (float *)malloc(D * sizeof(float));
         for (int col = 0; col < D; col++)
             row[col] = X[i + col];
@@ -119,7 +120,7 @@ float log_likelihood(float *X, float *mean, float *cov, float *weights, int K, i
             float *m = (float *)malloc(D * sizeof(float));
             get_cluster_mean_cov(mean, cov, m, c, j, D);
 
-            float g = gaussian(row, m, c, D) * weights[j];
+            float g = gaussian(row, m, c, D) * weights[j]; // compute pdf
             if (!(g == g)) // g is Nan - matrix is singular
                 continue;
             s += g;
@@ -129,13 +130,16 @@ float log_likelihood(float *X, float *mean, float *cov, float *weights, int K, i
         }
         free(row);
 
-        log_l += log(s);
+        log_l += log(s); // calculate log lokelihood
 
         i += D;
     }
     return log_l;
 }
 
+/*
+    Function that computes the EM algorithm parallel
+*/
 void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
                  float *p_val, int my_rank, int *data_count, int *data_displ,
                  int *p_count, int *p_displ, int N, int D, int K, char *FILE_PATH)
@@ -147,16 +151,19 @@ void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
 
     // allocate memory for local matrix values
     float *local_examples = malloc(data_count[my_rank] * sizeof(float));
+    // divide the matrix and distribute it to all processes
     divide_matrix_and_dist(X, local_examples, mean, cov, weights, data_count, data_displ, my_rank, N, D, K);
 
     float *local_p_val = malloc(p_count[my_rank] * sizeof(float));
 
     // calc log likelihood
-    int patience = 5;
+    int patience = 5; // patience to check the algorithm has really converged
     float local_log_l = log_likelihood(local_examples, mean, cov, weights, K, row_per_process, D);
     float log_l;
+    // sum the likelihood of all processes to check
     MPI_Allreduce(&local_log_l, &log_l, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
 
+    // process 0 opens the file and store the first value
     FILE *log_file;
     if (my_rank == 0)
     {
@@ -179,11 +186,14 @@ void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
         // calc log likelihood
         float local_log_l = log_likelihood(local_examples, mean, cov, weights, K, row_per_process, D);
         float log_l_next;
+        // sum the likelihood of all processes to check
         MPI_Allreduce(&local_log_l, &log_l_next, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
 
+        // process 0 stores the result
         if (my_rank == 0)
             fprintf(log_file, "%f\n", log_l_next);
 
+        // check the value of log likelihood and if it is the same reduce patience, if patience is 0 algorithm has converged
         if (roundf(log_l) == roundf(log_l_next))
         {
             if (patience == 0)
@@ -199,8 +209,7 @@ void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
         fclose(log_file);
 
     // gather p_val from the processes
-    MPI_Gatherv(local_p_val, p_count[my_rank], MPI_FLOAT, p_val,
-                p_count, p_displ, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(local_p_val, p_count[my_rank], MPI_FLOAT, p_val, p_count, p_displ, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
     free(local_p_val);
 }

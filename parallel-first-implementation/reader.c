@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include "constants.h"
 
+/*
+    Strdup implementation
+*/
 char *strdup(const char *str)
 {
     int n = strlen(str) + 1;
@@ -13,6 +16,10 @@ char *strdup(const char *str)
     return dup;
 }
 
+
+/*
+    Function that reads values from the input file and stores them in the rows array
+*/
 void readFile(char *rows[MAX_LEN], char *FILE_PATH)
 {
     FILE *file = fopen(FILE_PATH, "r");
@@ -22,6 +29,7 @@ void readFile(char *rows[MAX_LEN], char *FILE_PATH)
         int rowN = 0;
         char line[1024];
 
+        // get all the lines of the file
         while (fgets(line, 1024, file))
         {
             rows[rowN] = strdup(line);
@@ -37,21 +45,23 @@ void readFile(char *rows[MAX_LEN], char *FILE_PATH)
     }
 }
 
+/*
+    Function that populates the matrix by parsing values in each row
+*/
 void fill_matrix(float *mat, int N, int D, char *FILE_PATH)
 {
     char *rows[MAX_LEN];
     readFile(rows, FILE_PATH);
+    int col = 0;
+    char delim[] = ",";
     for (int row = 0; row < N; row++)
     {
-        int col = 0;
-        char delim[] = ",";
         char *ptr = strtok(rows[row], delim); // pointer to the first element
         while (ptr != NULL)
         {
             if (ptr != delim)
             {
-                // convert element to double and store it in the matrix
-                mat[row * D + col] = strtof(ptr, NULL);
+                mat[row * D + col] = strtof(ptr, NULL); // convert element to float and store it in the matrix
                 ptr = strtok(NULL, delim);
                 col++;
             }
