@@ -9,6 +9,7 @@
 #include "em_algorithm.h"
 
 int N, D, K, max_iter, last_process;
+//char log_filepath[1024];
 
 int main(int argc, char *argv[])
 {
@@ -21,6 +22,22 @@ int main(int argc, char *argv[])
     MPI_Init(NULL, NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+
+    if (my_rank == MASTER_PROCESS)
+    {
+        //snprintf(log_filepath, sizeof(log_filepath), "expectation-maximization/parallel-second-implementation/log-likelihood-results/N%s_K%s_D%s.txt", argv[1], argv[3], argv[2]);
+        
+        char* log_filepath = "expectation-maximization/parallel-second-implementation/log-likelihood-results/N800_K4_D3.txt";
+        
+        FILE *log_file = fopen(log_filepath, "w");
+        if (log_file == NULL)
+        {
+            printf("Error opening the file!");
+            exit(1);
+        }
+        fprintf(log_file, " "); //cleanup file on start
+        fclose(log_file);
+    }
 
     N = atoi(argv[1]);
     D = atoi(argv[2]);
@@ -47,8 +64,12 @@ int main(int argc, char *argv[])
     fill_matrix(samples, rows, process_samples, my_rank, FILE_PATH); // read the file and store its content
 
     for (int i = 0; i < MAX_LINES; i++)
-        free(rows[i]);
-    free(rows);
+    {
+        if (rows[i])
+            free(rows[i]);
+    }
+    if (rows)
+        free(rows);
 
     finish = MPI_Wtime();
     printf("Process %d read file succesfully in: %e seconds\n", my_rank, finish - start);
@@ -92,11 +113,17 @@ int main(int argc, char *argv[])
     /*
         MEMORY FREE AND FINALIZATION
     */
-    free(weights);
-    free(mean);
-    free(covariance);
-    free(p_val);
-    free(samples);
+    if (weights)
+        free(weights);
+    if (mean)
+        free(mean);
+    if (covariance)
+        free(covariance);
+    if (p_val)
+        free(p_val);
+    if (samples)
+        free(samples);
+    
     MPI_Finalize();
     return 0;
 }

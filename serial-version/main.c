@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
         printf("Error opening the file!");
         exit(1);
     }
-    fprintf(log_file, ""); // cleanup file on start
+    fprintf(log_file, " "); // cleanup file on start
     fclose(log_file);
     
     int N = atoi(argv[1]);

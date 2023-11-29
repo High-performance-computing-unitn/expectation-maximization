@@ -6,7 +6,8 @@
 float determinant(float *m, int n, int starting_index);
 
 // calculate the inverse of matrix
-void inverse(float *input_matrix, float *inverse, int size, int starting_index);
+void inverse(float *cov, float *inv, float *det, int n, int starting_index);
+
 
 // calculate matrix-vector multiplication
 void matmul(float *mat, float *vec, float *res);

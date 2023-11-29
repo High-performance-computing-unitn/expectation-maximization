@@ -18,11 +18,10 @@ float gaussian(Sample x, float *mean, float *cov, int j)
         x_u[i] = x.dimensions[i] - mean[starting_index_mean + i];
 
     // calculate the inverse of the covariance matrix and the determinant
-    float det = determinant(cov, D, starting_index_cov);
-
+    float det;
     float *inv = (float *)malloc(D * D * sizeof(float));
 
-    inverse(cov, inv, D, starting_index_cov);
+    inverse(cov, inv, &det, D, starting_index_cov);
 
     // multiply (x-mean) and inverse of covariance
     float *x_u_inv = (float *)malloc(D * sizeof(float));
@@ -36,9 +35,12 @@ float gaussian(Sample x, float *mean, float *cov, int j)
 
     float out_exp = 1. / sqrt(pow(2 * PI, D) * det);
 
-    free(x_u);
-    free(x_u_inv);
-    free(inv);
+    if (x_u)
+        free(x_u);
+    if (x_u_inv)
+        free(x_u_inv);
+    if (inv)
+        free(inv);
 
     return out_exp * in_exp;
 }
@@ -103,6 +105,7 @@ void e_step(Sample *X, float *mean, float *cov, float *weights, float *p_val, in
             p_val[i * K + j] = pij;
         }
         
-        free(gaussians);
+        if (gaussians)
+            free(gaussians);
     }
 }

@@ -8,18 +8,16 @@
 
 module load mpich-3.2
 # arguments are                     executable                                   N   D K iter filepath
-mpiexec -n 4 expectation-maximization/parallel-second-implementation/parallelRun 800 3 4 20 "expectation-maximization/data-generator/N800_K4_D3.csv"
+mpiexec -n 4 expectation-maximization/parallel-second-implementation/parallelRun 800 3 4 50 "expectation-maximization/data-generator/N800_K4_D3.csv"
 
-echo "----------------------"
+echo "-----------------"
 
-mpiexec -n 4 expectation-maximization/parallel-second-implementation/parallelRun 800 3 4 20 "expectation-maximization/data-generator/N800_K4_D3.csv"
+mpiexec -n 4 expectation-maximization/parallel-second-implementation/parallelRun 800 3 4 50 "expectation-maximization/data-generator/N800_K4_D3.csv"
 
-echo "----------------------"
+echo "-----------------"
+mpiexec -n 4 expectation-maximization/parallel-second-implementation/parallelRun 800 3 4 50 "expectation-maximization/data-generator/N800_K4_D3.csv"
 
-mpiexec -n 4 expectation-maximization/parallel-second-implementation/parallelRun 800 3 4 20 "expectation-maximization/data-generator/N800_K4_D3.csv"
+echo "-----------------"
+mpiexec -n 4 expectation-maximization/parallel-second-implementation/parallelRun 800 3 4 50 "expectation-maximization/data-generator/N800_K4_D3.csv"
 
-echo "----------------------"
-
-mpiexec -n 4 expectation-maximization/parallel-second-implementation/parallelRun 800 3 4 20 "expectation-maximization/data-generator/N800_K4_D3.csv"
-
-echo "----------------------"
+echo "-----------------"

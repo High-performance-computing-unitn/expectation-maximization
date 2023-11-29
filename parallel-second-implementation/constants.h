@@ -11,6 +11,7 @@ extern int N; // number of training examples
 extern int K; // number of Gaussians
 extern int max_iter; // number of iterations
 extern int last_process; // process with higher ID
+//extern char log_filepath[1024];
 
 typedef struct Sample{
     float *dimensions;

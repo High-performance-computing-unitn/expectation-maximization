@@ -76,7 +76,8 @@ void parallel_sum_pij(float *local_p_val, float *sum_pi, int process_samples)
     // collect sum from all processes and distribute result
     MPI_Reduce(local_sum_pi, sum_pi, K, MPI_FLOAT, MPI_SUM, MASTER_PROCESS, MPI_COMM_WORLD);
 
-    free(local_sum_pi);
+    if (local_sum_pi)
+        free(local_sum_pi);
 }
 
 void parallel_mean(Sample *samples, float *local_p_val, float *sum_pi, float *mean, int process_rank, int process_samples)
@@ -98,8 +99,10 @@ void parallel_mean(Sample *samples, float *local_p_val, float *sum_pi, float *me
     // broadcast mean values to all processes
     MPI_Bcast(mean, K * D, MPI_FLOAT, MASTER_PROCESS, MPI_COMM_WORLD);
 
-    free(local_mean_num);
-    free(total_mean_num);
+    if (local_mean_num)
+        free(local_mean_num);
+    if (total_mean_num)
+        free(total_mean_num);
 }
 
 /*
@@ -131,8 +134,10 @@ void parallel_cov(Sample *samples, float *local_p_val, float *mean, float *sum_p
     // broadcast cov values to all processes
     MPI_Bcast(cov, K * D * D, MPI_FLOAT, MASTER_PROCESS, MPI_COMM_WORLD);
 
-    free(local_cov_num);
-    free(total_cov_num);
+    if (local_cov_num)
+        free(local_cov_num);
+    if (total_cov_num)
+        free(total_cov_num);
 }
 
 /*
@@ -172,5 +177,6 @@ void m_step_parallel(float *local_p_val, Sample *samples, float *mean, float *co
     // calc weights
     parallel_weights(sum_pi, weights, process_rank);
 
-    free(sum_pi);
+    if (sum_pi)
+        free(sum_pi);
 }

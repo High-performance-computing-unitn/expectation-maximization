@@ -91,7 +91,8 @@ float determinant(float *m, int n, int starting_index)
                 }
             }
 
-            free(matrix);
+            if (matrix)
+                free(matrix);
             return det;
         }
         else
@@ -99,9 +100,7 @@ float determinant(float *m, int n, int starting_index)
     }
     else if (n == 3)
     {
-        return (m[starting_index] * (m[starting_index + 4] * m[starting_index + 8] - m[starting_index + 5] * m[starting_index + 7]) 
-                - m[starting_index + 1] * (m[starting_index + 3] * m[starting_index + 8] - m[starting_index + 5] * m[starting_index + 6]) 
-                + m[starting_index + 2] * (m[starting_index + 3] * m[starting_index + 7] - m[starting_index + 4] * m[starting_index + 6]));
+        return (m[starting_index] * (m[starting_index + 4] * m[starting_index + 8] - m[starting_index + 5] * m[starting_index + 7]) - m[starting_index + 1] * (m[starting_index + 3] * m[starting_index + 8] - m[starting_index + 5] * m[starting_index + 6]) + m[starting_index + 2] * (m[starting_index + 3] * m[starting_index + 7] - m[starting_index + 4] * m[starting_index + 6]));
     }
     else if (n == 2)
     {
@@ -115,102 +114,81 @@ float determinant(float *m, int n, int starting_index)
         return 0.;
 }
 
-void generate_identity(float **matrix, int size)
+void getCofactor(float *cov, float *temp, int p, int q, int n, int starting_index)
 {
-    for (int i = 0; i < size; i++)
-        for (int j = 0; j < size; j++)
-            if (i == j)
-                matrix[i][j] = 1;
-            else
-                matrix[i][j] = 0;
+    int i = 0, j = 0;
+
+    // Looping for each element of the matrix
+    for (int row = 0; row < n; row++)
+    {
+        for (int col = 0; col < n; col++)
+        {
+            // Copying into the temporary matrix only those
+            // elements that are not in the given row and column
+            if (row != p && col != q)
+            {
+                temp[i * (n - 1) + j] = cov[starting_index + row * n + col];
+                j++;
+
+                // Row is filled, so increase row index and
+                // reset col index
+                if (j == n - 1)
+                {
+                    j = 0;
+                    i++;
+                }
+            }
+        }
+    }
 }
 
-void copy_matrix(float **copy, float *matrix, int size, int starting_index)
+void adjoint(float *cov, float *adj, int n, int starting_index)
 {
-    for (int i = 0; i < size; i++)
-        for (int j = 0; j < size; j++)
-            copy[i][j] = matrix[starting_index + i * size + j];
+    if (n == 1)
+    {
+        adj[0] = 1;
+        return;
+    }
+
+    // Temp is used to store cofactors of A[][]
+    int sign = 1;
+    float *temp = (float *)malloc(n * n * sizeof(float));
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            // Get the cofactor of A[i][j]
+            getCofactor(cov, temp, i, j, n, starting_index);
+
+            // Sign of adj[j][i] is positive if the sum of row
+            // and column indexes is even.
+            sign = ((i + j) % 2 == 0) ? 1 : -1;
+
+            // Interchange rows and columns to get the
+            // transpose of the cofactor matrix
+            adj[j * n + i] = (sign) * (determinant(temp, n - 1, starting_index));
+        }
+    }
+
+    free(temp);
 }
 
-void inverse(float *matrix, float *inv, int size, int starting_index)
+void inverse(float *cov, float *inv, float *det, int n, int starting_index)
 {
-    float **input_matrix = (float **)malloc(size * sizeof(float *));
-    for (int i = 0; i < size; i++)
-        input_matrix[i] = (float *)malloc(size * sizeof(float));
+    // Find the determinant of A[][]
+    *det = determinant(cov, n, starting_index);
 
-    float **inverse = (float **)malloc(size * sizeof(float *));
-    for (int i = 0; i < size; i++)
-        inverse[i] = (float *)malloc(size * sizeof(float));
+    // Find the adjoint
+    float *adj = (float *)malloc(n * n * sizeof(float));
+    adjoint(cov, adj, n, starting_index);
 
-    copy_matrix(input_matrix, matrix, size, starting_index);
+    // Find the inverse using the formula "inverse(A) = adj(A)/det(A)"
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            inv[i * n + j] = adj[j * n + i] / *det;
 
-    generate_identity(inverse, size);
-    for (int i = 0; i < size; i++)
-    {
-        if (input_matrix[i][i] == 0)
-        {
-            for (int j = i + 1; j < size; j++)
-            {
-                if (input_matrix[j][i] != 0.0)
-                {
-                    float *tmp = (float *)malloc(size * sizeof(float));
-                    tmp = input_matrix[i];
-                    input_matrix[i] = input_matrix[j];
-                    input_matrix[j] = tmp;
-
-                    free(tmp);
-                    break;
-                }
-                if (j == size - 1)
-                {
-                    printf("Inverse does not exist for this matrix");
-                    exit(0);
-                }
-            }
-        }
-        float scale = input_matrix[i][i];
-        for (int col = 0; col < size; col++)
-        {
-            input_matrix[i][col] = input_matrix[i][col] / scale;
-            inverse[i][col] = inverse[i][col] / scale;
-        }
-        if (i < size - 1)
-        {
-            for (int row = i + 1; row < size; row++)
-            {
-                float factor = input_matrix[row][i];
-                for (int col = 0; col < size; col++)
-                {
-                    input_matrix[row][col] -= factor * input_matrix[i][col];
-                    inverse[row][col] -= factor * inverse[i][col];
-                }
-            }
-        }
-    }
-    for (int zeroing_col = size - 1; zeroing_col >= 1; zeroing_col--)
-    {
-        for (int row = zeroing_col - 1; row >= 0; row--)
-        {
-            float factor = input_matrix[row][zeroing_col];
-            for (int col = 0; col < size; col++)
-            {
-                input_matrix[row][col] -= factor * input_matrix[zeroing_col][col];
-                inverse[row][col] -= factor * inverse[zeroing_col][col];
-            }
-        }
-    }
-
-    for (int i = 0; i < D; i++)
-        for (int j = 0; j < D; j++)
-            inv[i * D + j] = inverse[i][j];
-
-    for (int i = 0; i < size; i++)
-    {
-        free(inverse[i]);
-        free(input_matrix[i]);
-    }
-    free(inverse);
-    free(input_matrix);
+    free(adj);
 }
 
 /*
@@ -269,6 +247,8 @@ void standardize(Sample *data, int sample_size)
         for (int j = 0; j < D; j++)
             data[i].dimensions[j] = (data[i].dimensions[j] - mean[j]) / stdDev[j];
 
-    free(mean);
-    free(stdDev);
+    if (mean)
+        free(mean);
+    if (stdDev)
+        free(stdDev);
 }
