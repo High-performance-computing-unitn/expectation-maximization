@@ -5,61 +5,61 @@
 #include "constants.h"
 
 /*
-detrminant code
-https://matematicamente.it/forum/viewtopic.php?f=15&t=145130
-*/
+ * Code for matrix inverse taken from
+ * https://www.geeksforgeeks.org/adjoint-inverse-matrix/
+ * Code for determinant taken from
+ * https://matematicamente.it/forum/viewtopic.php?f=15&t=145130
+ */
 
-float my_abs(float a)
+float abs(float f)
 {
-    return (a < 0.) ? -a : a;
+    return (f < 0.) ? -f : f;
 }
 
-float factorize(float *m, int n)
+float factorize(float *matrix, int n)
 {
     float parity = 1.;
 
     for (int k = 0; k < n - 1; k++)
     {
-        float max = my_abs(m[k * n + k]);
-        int ip = k;
+        float max = abs(matrix[k * n + k]);
+        int index = k;
         for (int i = k + 1; i < n; i++)
         {
-            float t = my_abs(m[i * n + k]);
+            float t = abs(matrix[i * n + k]);
             if (t > max)
             {
                 max = t;
-                ip = i;
+                index = i;
             }
         }
 
         if (max == 0.)
-        {
             return 0.;
-        }
 
-        if (ip != k)
+        if (index != k)
         {
             parity *= -1;
-#pragma omp parallel for
+            #pragma omp parallel for
             for (int i = 0; i < n; i++)
             {
-                float t = m[k * n + i];
-                m[k * n + i] = m[ip * n + i];
-                m[ip * n + i] = t;
+                float t = matrix[k * n + i];
+                matrix[k * n + i] = matrix[index * n + i];
+                matrix[index * n + i] = t;
             }
         }
 
-        float pe = m[k * n + k];
-#pragma omp parallel for
+        float pe = matrix[k * n + k];
+        #pragma omp parallel for
         for (int i = k + 1; i < n; i++)
-            m[i * n + k] /= pe;
+            matrix[i * n + k] /= pe;
 
-#pragma omp parallel for
+        #pragma omp parallel for
         for (int i = k + 1; i < n; i++)
         {
-            float mik = m[i * n + k];
+            float matrix_i_k = matrix[i * n + k];
             for (int j = k + 1; j < n; j++)
-                m[i * n + j] -= mik * m[k * n + j];
+                matrix[i * n + j] -= matrix_i_k * matrix[k * n + j];
         }
     }
 
@@ -68,21 +68,24 @@ float factorize(float *m, int n)
 
 float determinant(float *m, int n, int starting_index)
 {
+    // if matrix is grater than 3x3 compute as follows
     if (n > 3)
     {
         int n2 = n * n;
         float *matrix = (float *)malloc(n2 * sizeof(float));
         if (matrix)
         {
-#pragma omp parallel for
+            // copy the input matrix with threads to avoid changing its values
+            #pragma omp parallel for
             for (int i = 0; i < n2; i++)
                 matrix[i] = m[starting_index + i];
 
-            float det = factorize(matrix, n);
+            float det = factorize(matrix, n); // factorize matrix
 
             if (det != 0)
             {
-#pragma omp parallel for reduction(* : det)
+                // if the determinant is not zero each thread compute its det and then multiply the result of each thread
+                #pragma omp parallel for reduction(* : det)
                 for (int i = 0; i < n; i++)
                 {
                     int ind = i * n + i;
@@ -98,9 +101,11 @@ float determinant(float *m, int n, int starting_index)
         else
             return 0.;
     }
-    else if (n == 3)
+    else if (n == 3) // if matrix is less then or equal to 3x3 in size compute determinant by hand
     {
-        return (m[starting_index] * (m[starting_index + 4] * m[starting_index + 8] - m[starting_index + 5] * m[starting_index + 7]) - m[starting_index + 1] * (m[starting_index + 3] * m[starting_index + 8] - m[starting_index + 5] * m[starting_index + 6]) + m[starting_index + 2] * (m[starting_index + 3] * m[starting_index + 7] - m[starting_index + 4] * m[starting_index + 6]));
+        return (m[starting_index] * (m[starting_index + 4] * m[starting_index + 8] - m[starting_index + 5] * m[starting_index + 7])
+                - m[starting_index + 1] * (m[starting_index + 3] * m[starting_index + 8] - m[starting_index + 5] * m[starting_index + 6])
+                + m[starting_index + 2] * (m[starting_index + 3] * m[starting_index + 7] - m[starting_index + 4] * m[starting_index + 6]));
     }
     else if (n == 2)
     {
@@ -118,20 +123,17 @@ void getCofactor(float *cov, float *temp, int p, int q, int n, int starting_inde
 {
     int i = 0, j = 0;
 
-    // Looping for each element of the matrix
-    for (int row = 0; row < n; row++)
+    for (int row = 0; row < n; row++) // Looping for each element of the matrix
     {
         for (int col = 0; col < n; col++)
         {
-            // Copying into the temporary matrix only those
-            // elements that are not in the given row and column
+            // Copying into the temporary matrix only those elements that are not in the given row and column
             if (row != p && col != q)
             {
                 temp[i * (n - 1) + j] = cov[starting_index + row * n + col];
                 j++;
 
-                // Row is filled, so increase row index and
-                // reset col index
+                // Row is filled, so increase row index and reset col index
                 if (j == n - 1)
                 {
                     j = 0;
@@ -161,12 +163,10 @@ void adjoint(float *cov, float *adj, int n, int starting_index)
             // Get the cofactor of A[i][j]
             getCofactor(cov, temp, i, j, n, starting_index);
 
-            // Sign of adj[j][i] is positive if the sum of row
-            // and column indexes is even.
+            // Sign of adj[j][i] is positive if the sum of row and column indexes is even.
             sign = ((i + j) % 2 == 0) ? 1 : -1;
 
-            // Interchange rows and columns to get the
-            // transpose of the cofactor matrix
+            // Interchange rows and columns to get the transpose of the cofactor matrix
             adj[j * n + i] = (sign) * (determinant(temp, n - 1, starting_index));
         }
     }
@@ -174,6 +174,9 @@ void adjoint(float *cov, float *adj, int n, int starting_index)
     free(temp);
 }
 
+/*
+    Function that computes the inverse of the imput matrix and calculate its determinant
+*/
 void inverse(float *cov, float *inv, float *det, int n, int starting_index)
 {
     // Find the determinant of A[][]
@@ -192,8 +195,7 @@ void inverse(float *cov, float *inv, float *det, int n, int starting_index)
 }
 
 /*
-    Function that performs matrix vector multiplication
-    and stores the result in the res vector passed as an argument.
+    Function that performs matrix vector multiplication and stores the result in the res vector passed as an argument.
 */
 void matmul(float *mat, float *vec, float *res)
 {
@@ -206,8 +208,7 @@ void matmul(float *mat, float *vec, float *res)
 }
 
 /*
-    Function that calculates the dot product between two vectors
-    and returns the results.
+    Function that calculates the dot product between two vectors and returns the results.
 */
 float dotProduct(float *a, float *b)
 {

@@ -3,6 +3,7 @@
 
 #include "constants.h"
 
+// computes pdf
 float gaussian(Sample x, float *mean, float *cov, int j);
 
 // run expectation step

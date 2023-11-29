@@ -20,7 +20,6 @@ float gaussian(Sample x, float *mean, float *cov, int j)
     // calculate the inverse of the covariance matrix and the determinant
     float det;
     float *inv = (float *)malloc(D * D * sizeof(float));
-
     inverse(cov, inv, &det, D, starting_index_cov);
 
     // multiply (x-mean) and inverse of covariance
@@ -46,8 +45,7 @@ float gaussian(Sample x, float *mean, float *cov, int j)
 }
 
 /*
-    Function that resets the values of the covariance matrix
-    if it becomes the singular.
+    Function that resets the values of the covariance matrix if it becomes the singular.
 */
 void reset_cov(float *cov, int j)
 {
@@ -61,8 +59,7 @@ void reset_cov(float *cov, int j)
 }
 
 /*
-    Function that resets the values of the mean vector
-    if the covariance matrix becomes the singular.
+    Function that resets the values of the mean vector if the covariance matrix becomes the singular.
 */
 void reset_mean(float *mean, int j)
 {
@@ -78,8 +75,8 @@ void reset_mean(float *mean, int j)
 */
 void e_step(Sample *X, float *mean, float *cov, float *weights, float *p_val, int row_per_process)
 {
-    for (int i = 0; i < row_per_process; i++)
-    {                                                          // iterate over the training examples
+    for (int i = 0; i < row_per_process; i++) // iterate over the training examples
+    {                                                         
         float p_x = 0.;                                        // the sum of pdf of all clusters
         float *gaussians = (float *)malloc(K * sizeof(float)); // store the result of gaussian pdf to avoid computing it twice
 

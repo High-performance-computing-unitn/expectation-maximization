@@ -7,6 +7,9 @@
 #include "e_step.h"
 #include "m_step.h"
 
+/*
+    Function that calculates the log likelihood to check algorithm convergence
+*/
 float log_likelihood(Sample *samples, float *mean, float *cov, float *weights, int process_samples)
 {
     float log_l = 0;
@@ -16,31 +19,31 @@ float log_likelihood(Sample *samples, float *mean, float *cov, float *weights, i
         float s = 0;
         for (int j = 0; j < K; j++)
         {
-            float g = gaussian(samples[i], mean, cov, j) * weights[j];
-            printf("%f\n", g);
+            float g = gaussian(samples[i], mean, cov, j) * weights[j]; // compute pdf
             if (!(g == g)) // g is Nan - matrix is singular
                 continue;
             s += g;
         }
-        log_l += log(s);
+        log_l += log(s); // calculate log likelihood
     }
     return log_l;
 }
 
 /*
-   The function that iteratively run expectation and maximization steps
-   for n number of times.
+   The function that iteratively run expectation and maximization steps for n iteration or until convergence.
 */
 void em_train(Sample *samples, float *mean, float *cov, float *weights, float *p_val, int process_samples, int process_rank)
 {
     float *local_p_val = (float *)malloc(process_samples * K * sizeof(float));
 
     // calc log likelihood
-    int patience = 5;
-    float local_log_l = log_likelihood(samples, mean, cov, weights, process_samples);
+    int patience = 5; // patience to check that algorithm has really converged
+    float local_log_l = log_likelihood(samples, mean, cov, weights, process_samples); // calculate log likelihood
     float log_l = 0;
+    // compute sum of all processes log likelihood to check
     MPI_Allreduce(&local_log_l, &log_l, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
 
+    // master process opens file and stores the result
     FILE *log_file;
     if (process_rank == MASTER_PROCESS)
     {
@@ -55,17 +58,22 @@ void em_train(Sample *samples, float *mean, float *cov, float *weights, float *p
 
     for (int i = 0; i < max_iter; i++)
     {
+        // e step
         e_step(samples, mean, cov, weights, local_p_val, process_samples);
+        // m step
         m_step_parallel(local_p_val, samples, mean, cov, weights, process_rank, process_samples);
 
         // calc log likelihood
         float local_log_l = log_likelihood(samples, mean, cov, weights, process_samples);
         float log_l_next = 0;
+        // compute sum of all processes log likelihood to check
         MPI_Allreduce(&local_log_l, &log_l_next, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
 
+        // master process stores the result
         if (process_rank == MASTER_PROCESS)
             fprintf(log_file, "%f\n", log_l_next);
 
+        // if the same log likelihood is found patience is reduced, if patience is 0 algorithm has converged
         if (roundf(log_l) == roundf(log_l_next))
         {
             if (patience == 0)
@@ -79,6 +87,7 @@ void em_train(Sample *samples, float *mean, float *cov, float *weights, float *p
     if (process_rank == MASTER_PROCESS)
         fclose(log_file);
 
+    // gather p values of all processes
     MPI_Gather(local_p_val, process_samples * K, MPI_FLOAT, p_val, process_samples * K, MPI_FLOAT, MASTER_PROCESS, MPI_COMM_WORLD);
 
     if (local_p_val)
@@ -86,8 +95,7 @@ void em_train(Sample *samples, float *mean, float *cov, float *weights, float *p
 }
 
 /*
-    The function that initializes the initial values of mean
-    in the range (0, 1).
+    The function that initializes the initial values of mean in the range (0, 1).
 */
 void init_mean(float *mean)
 {
@@ -114,8 +122,7 @@ void init_cov(float *cov)
 
 /*
     The function that initializes the initial values of the weights.
-    All clusters will have equal weight initially equal to 1 / K,
-    where K - number of clusters.
+    All clusters will have equal weight initially equal to 1 / K, where K - number of clusters.
 */
 void init_weights(float *weights)
 {

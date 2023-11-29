@@ -23,12 +23,15 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
+    // get input parameters
     N = atoi(argv[1]);
     D = atoi(argv[2]);
     K = atoi(argv[3]);
     max_iter = atoi(argv[4]);
     char *FILE_PATH = argv[5];
+    last_process = world_size - 1;
 
+    // master process creates the file path for log likelihood file and writes first line
     if (my_rank == MASTER_PROCESS)
     {
         snprintf(log_filepath, sizeof(log_filepath), "expectation-maximization/parallel-second-implementation/log-likelihood-results/N%s_K%s_D%s.txt", argv[1], argv[3], argv[2]);
@@ -42,11 +45,6 @@ int main(int argc, char *argv[])
         fprintf(log_file, "\n\n ------------------------------------------ \n Execution for N: %d, K: %d, D: %d\n", N, K, D);
         fclose(log_file);
     }
-
-    if (my_rank == MASTER_PROCESS)
-        printf("Execution for dataset with %d samples, %d gaussians and %d dimensions\n", N, K, D);
-
-    last_process = world_size - 1;
 
     int process_samples = N / world_size;
 
@@ -87,26 +85,27 @@ int main(int argc, char *argv[])
 
     start = MPI_Wtime();
 
-    standardize(samples, process_samples);
+    standardize(samples, process_samples); // standardize samples
 
-    initialize(mean, covariance, weights);
+    initialize(mean, covariance, weights); // initialize mean, covariance and weights
 
-    em_train(samples, mean, covariance, weights, p_val, process_samples, my_rank);
+    em_train(samples, mean, covariance, weights, p_val, process_samples, my_rank); // start algorithm
 
     finish = MPI_Wtime();
-    printf("Process %d completed in: %e seconds\n", my_rank, finish - start);
 
-    // if (my_rank == MASTER_PROCESS)
-    // {
-    //     for (int i = 0; i < N; i++)
-    //     {
-    //         for (int j = 0; j < K; j++)
-    //         {
-    //             printf("%f ", p_val[i * K + j]);
-    //         }
-    //         printf("\n");
-    //     }
-    // }
+    if (my_rank == MASTER_PROCESS)
+    {
+        printf("Process %d completed in: %e seconds\n", my_rank, finish - start);
+        // uncomment to print result of the algorithm
+        // for (int i = 0; i < N; i++)
+        // {
+        //     for (int j = 0; j < K; j++)
+        //     {
+        //         printf("%f ", p_val[i * K + j]);
+        //     }
+        //     printf("\n");
+        // }
+    }
 
     /*
         MEMORY FREE AND FINALIZATION

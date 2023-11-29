@@ -5,14 +5,13 @@
 #include "constants.h"
 
 /*
-    For each cluster it calculates the sum of probabilities
-    of assignment to this cluster.
+    For each cluster it calculates the sum of probabilities of assignment to this cluster.
     Stores the result in res vector passed as a parameter.
 */
 void calc_sum_pij(float *p_val, float *res, int process_samples)
 {
-    for (int k = 0; k < K; k++)
-    { // iterate over clusters
+    for (int k = 0; k < K; k++) // iterate over clusters
+    {
         float s = 0;
         for (int i = 0; i < process_samples; i++) // iterate over training examples
             s += p_val[i * K + k];                // add probability of assignment of example 'i' to cluster 'k'
@@ -92,7 +91,7 @@ void parallel_mean(Sample *samples, float *local_p_val, float *sum_pi, float *me
 
     MPI_Reduce(local_mean_num, total_mean_num, K * D, MPI_FLOAT, MPI_SUM, MASTER_PROCESS, MPI_COMM_WORLD);
 
-    // update mean values
+    // update mean values, only done by master process
     if (process_rank == MASTER_PROCESS)
         m_step_mean(mean, total_mean_num, sum_pi);
 
@@ -118,6 +117,7 @@ void m_step_covariance(float *cov, float *cov_num, float *sum_pij)
 
 void parallel_cov(Sample *samples, float *local_p_val, float *mean, float *sum_pi, float *cov, int process_rank, int process_samples)
 {
+    // each process calculate cov numerator of its local examples
     float *local_cov_num = (float *)malloc(K * D * D * sizeof(float));
 
     calc_covariance_num(samples, mean, local_cov_num, local_p_val, process_samples);
@@ -127,7 +127,7 @@ void parallel_cov(Sample *samples, float *local_p_val, float *mean, float *sum_p
 
     MPI_Reduce(local_cov_num, total_cov_num, K * D * D, MPI_FLOAT, MPI_SUM, MASTER_PROCESS, MPI_COMM_WORLD);
 
-    // update cov values
+    // update cov values, only done by master process
     if (process_rank == MASTER_PROCESS)
         m_step_covariance(cov, total_cov_num, sum_pi);
 
