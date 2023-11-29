@@ -9,7 +9,7 @@
 #include "em_algorithm.h"
 
 int N, D, K, max_iter, last_process;
-//char log_filepath[1024];
+char log_filepath[1024];
 
 int main(int argc, char *argv[])
 {
@@ -23,27 +23,25 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
-    if (my_rank == MASTER_PROCESS)
-    {
-        //snprintf(log_filepath, sizeof(log_filepath), "expectation-maximization/parallel-second-implementation/log-likelihood-results/N%s_K%s_D%s.txt", argv[1], argv[3], argv[2]);
-        
-        char* log_filepath = "expectation-maximization/parallel-second-implementation/log-likelihood-results/N800_K4_D3.txt";
-        
-        FILE *log_file = fopen(log_filepath, "w");
-        if (log_file == NULL)
-        {
-            printf("Error opening the file!");
-            exit(1);
-        }
-        fprintf(log_file, " "); //cleanup file on start
-        fclose(log_file);
-    }
-
     N = atoi(argv[1]);
     D = atoi(argv[2]);
     K = atoi(argv[3]);
     max_iter = atoi(argv[4]);
     char *FILE_PATH = argv[5];
+
+    if (my_rank == MASTER_PROCESS)
+    {
+        snprintf(log_filepath, sizeof(log_filepath), "expectation-maximization/parallel-second-implementation/log-likelihood-results/N%s_K%s_D%s.txt", argv[1], argv[3], argv[2]);
+                
+        FILE *log_file = fopen(log_filepath, "a");
+        if (log_file == NULL)
+        {
+            printf("Error opening the file!");
+            exit(1);
+        }
+        fprintf(log_file, "\n\n ------------------------------------------ \n Execution for N: %d, K: %d, D: %d\n", N, K, D);
+        fclose(log_file);
+    }
 
     if (my_rank == MASTER_PROCESS)
         printf("Execution for dataset with %d samples, %d gaussians and %d dimensions\n", N, K, D);
