@@ -38,8 +38,7 @@ float gaussian(float *x, float *mean, float *cov, int D)
 }
 
 /*
-    Function that resets the values of the covariance matrix
-    if it becomes the singular.
+    Function that resets the values of the covariance matrix if it becomes the singular.
 */
 void reset_cov(float *cov, int k, int D)
 {
@@ -54,8 +53,7 @@ void reset_cov(float *cov, int k, int D)
 }
 
 /*
-    Function that resets the values of the mean vector
-    if the covariance matrix becomes the singular.
+    Function that resets the values of the mean vector if the covariance matrix becomes the singular.
 */
 void reset_mean(float *mean, int k, int D)
 {
@@ -64,6 +62,9 @@ void reset_mean(float *mean, int k, int D)
         mean[start_ind + d] = (rand() % 10 + 1) * 0.1;
 }
 
+/*
+    Function that copies the values of mean of covaraince
+*/
 void get_cluster_mean_cov(float *mean, float *cov, float *m_res, float *cov_res, int k, int D)
 {
     int start_ind = k * D * D;
@@ -84,9 +85,8 @@ void e_step(float *X, float *mean, float *cov, float *weights, float *p_val, int
 {
     int p_val_ind = 0;
 
-    for (int i = 0; i < N * D;)
-    { // iterate over the training examples
-
+    for (int i = 0; i < N * D;)// iterate over the training examples
+    { 
         float *row = (float *)malloc(D * sizeof(float));
         for (int col = 0; col < D; col++)
             row[col] = X[i + col];
@@ -94,17 +94,16 @@ void e_step(float *X, float *mean, float *cov, float *weights, float *p_val, int
         float p_x = 0.;                                        // the sum of pdf of all clusters
         float *gaussians = (float *)malloc(K * sizeof(float)); // store the result of gaussian pdf to avoid computing it twice
 
-        for (int j = 0; j < K; j++)
-        { // iterate over clusters
-
+        for (int j = 0; j < K; j++) // iterate over clusters
+        { 
             float *c = (float *)malloc(D * D * sizeof(float));
             float *m = (float *)malloc(D * sizeof(float));
             get_cluster_mean_cov(mean, cov, m, c, j, D);
 
             float g = gaussian(row, m, c, D) * weights[j]; // calculate pdf
 
-            if (!(g == g))
-            {                           // g is Nan - matrix is singular
+            if (!(g == g)) // g is Nan - matrix is singular
+            {                           
                 reset_mean(mean, j, D); // randomly reassign
                 reset_cov(cov, j, D);   // randomly reassign
                 get_cluster_mean_cov(mean, cov, m, c, j, D);
@@ -121,8 +120,8 @@ void e_step(float *X, float *mean, float *cov, float *weights, float *p_val, int
         if (p_x == 0) // assign small value to avoid zero division
             p_x = 1e-5;
 
-        for (int j = 0; j < K; j++)
-        { // calculate probability for each cluster assignment
+        for (int j = 0; j < K; j++) // calculate probability for each cluster assignment
+        { 
             float pij = gaussians[j] / p_x;
             p_val[p_val_ind + j] = pij;
         }

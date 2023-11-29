@@ -1,14 +1,13 @@
 #include <stdlib.h>
 
 /*
-    For each cluster it calculates the sum of probabilities
-    of assignment to this cluster.
+    For each cluster it calculates the sum of probabilities of assignment to this cluster.
     Stores the result in res vector passed as a parameter.
 */
 void calc_sum_pij(float *p_val, float *res, int K, int N)
 {
-    for (int k = 0; k < K; k++)
-    { // iterate over clusters
+    for (int k = 0; k < K; k++) // iterate over clusters
+    {
         float s = 0;
         for (int i = 0; i < N; i++) // iterate over training examples
             s += p_val[i * K + k];  // add probability of assignment of example 'i' to cluster 'k'
@@ -39,7 +38,6 @@ void calc_covariance_num(float *X, float *mean, float *cov, float *p_val, int K,
             for (int r = 0; r < D; r++)     // iterate over row dimension
                 for (int c = 0; c < D; c++) // iterate over column dimension
                 {
-
                     // calculate the values of covariance matrix of cluster 'k' row 'r' and column 'c'
                     cov[start_ind + r * D + c] += p_val[i * K + k] * (X[i * D + r] - mean[k * D + r]) * (X[i * D + c] - mean[k * D + c]);
 
@@ -80,8 +78,8 @@ void calc_mean_num(float *X, float *p_val, float *res, int K, int N, int D)
 */
 void m_step_mean(float *mean, float *mean_nom, float *sum_pij, int K, int D)
 {
-    for (int k = 0; k < K; k++)
-        for (int j = 0; j < D; j++)
+    for (int k = 0; k < K; k++)     // iterate over clusters
+        for (int j = 0; j < D; j++) // iterate over dimensions
             // calculate the value of mean of cluster 'k' at the dimension 'j'
             mean[k * D + j] = mean_nom[k * D + j] / sum_pij[k];
 }

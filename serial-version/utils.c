@@ -2,12 +2,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/*
+ * Code for matrix inverse taken from
+ * https://www.geeksforgeeks.org/adjoint-inverse-matrix/
+ */
+
 void getCofactor(float *A, float *temp, int p, int q, int n)
 {
     int i = 0, j = 0;
 
-    // Looping for each element of the matrix
-    for (int row = 0; row < n; row++)
+    for (int row = 0; row < n; row++) // Looping for each element of the matrix
     {
         for (int col = 0; col < n; col++)
         {
@@ -18,8 +22,7 @@ void getCofactor(float *A, float *temp, int p, int q, int n)
                 temp[i * (n - 1) + j] = A[row * n + col];
                 j++;
 
-                // Row is filled, so increase row index and
-                // reset col index
+                // Row is filled, so increase row index and reset col index
                 if (j == n - 1)
                 {
                     j = 0;
@@ -30,6 +33,9 @@ void getCofactor(float *A, float *temp, int p, int q, int n)
     }
 }
 
+/*
+    Function that computes the determinant of the matrix
+*/
 float determinant(float *A, int n)
 {
     float det = 0;
@@ -59,6 +65,7 @@ float determinant(float *A, int n)
 
 void adjoint(float *A, float *adj, int n)
 {
+    // Base case: if the matrix contains a single element
     if (n == 1)
     {
         adj[0] = 1;
@@ -76,12 +83,10 @@ void adjoint(float *A, float *adj, int n)
             // Get the cofactor of A[i][j]
             getCofactor(A, temp, i, j, n);
 
-            // Sign of adj[j][i] is positive if the sum of row
-            // and column indexes is even.
+            // Sign of adj[j][i] is positive if the sum of row and column indexes is even.
             sign = ((i + j) % 2 == 0) ? 1 : -1;
 
-            // Interchange rows and columns to get the
-            // transpose of the cofactor matrix
+            // Interchange rows and columns to get the transpose of the cofactor matrix
             adj[j * n + i] = (sign) * (determinant(temp, n - 1));
         }
     }
@@ -89,6 +94,9 @@ void adjoint(float *A, float *adj, int n)
     free(temp);
 }
 
+/*
+    Function that calculate the inverse of the input matrix and calculate the determinant
+*/
 void inverse(float *A, float *inv, float *det, int n)
 {
     // Find the determinant of A[][]

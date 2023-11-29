@@ -3,6 +3,9 @@
 #include <string.h>
 #include "const.h"
 
+/*
+    Strdup implementation
+*/
 char *strdup(const char *str)
 {
     int n = strlen(str) + 1;
@@ -12,6 +15,9 @@ char *strdup(const char *str)
     return dup;
 }
 
+/*
+    Function that reads from the input file and store each row in the rows array.
+*/
 void readFile(char *rows[MAX_ROW_LEN], char *FILE_PATH)
 {
     FILE *file = fopen(FILE_PATH, "r");
@@ -21,7 +27,7 @@ void readFile(char *rows[MAX_ROW_LEN], char *FILE_PATH)
         int rowN = 0;
         char line[1024];
 
-        // get all the other lines of the dataset
+        // get all the lines of the dataset
         while (fgets(line, 1024, file))
         {
             rows[rowN] = strdup(line);
@@ -37,22 +43,23 @@ void readFile(char *rows[MAX_ROW_LEN], char *FILE_PATH)
     }
 }
 
+/*
+    Function that fill the matrix of samples by parsing the input rows.
+*/
 void fill_matrix(float *mat, int N, int D, char *FILE_PATH)
 {
     char *rows[MAX_ROW_LEN];
     readFile(rows, FILE_PATH);
-    for (int row = 0; row < N; row++)
+    int col = 0;
+    char delim[] = ","; // delimiter of columns
+    for (int row = 0; row < N; row++) // iterate rows
     {
-        int col = 0;
-        // pointer to the first element
-        char delim[] = ","; // delimiter of columns
-        char *ptr = strtok(rows[row], delim);
+        char *ptr = strtok(rows[row], delim); // pointer to the first element
         while (ptr != NULL)
         {
             if (ptr != delim)
             {
-                // convert element to double and store it in the matrix
-                mat[row * D + col] = strtof(ptr, NULL);
+                mat[row * D + col] = strtof(ptr, NULL); // convert element to float and store it in the matrix
                 ptr = strtok(NULL, delim);
                 col++;
             }

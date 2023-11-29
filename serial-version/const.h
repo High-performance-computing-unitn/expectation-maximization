@@ -5,6 +5,6 @@
 #define MAX_ROW_LEN 1000 // maximum length of rows in the file
 #define PI 3.14159265358979323846
 
-extern char log_filepath[1024];
+extern char log_filepath[1024]; // filepath of the log-likelihood file
 
 #endif 
