@@ -6,11 +6,15 @@
 #include "file_reader.h"
 #include "em_algorithm.h"
 
+char log_filepath[1024];
+
 int main(int argc, char *argv[])
 {
     // get starting time
     clock_t start = clock();
     srand(time(NULL));
+
+    snprintf(log_filepath, sizeof(log_filepath), "expectation-maximization/serial-version/log-likelihood-results/N%s_K%s_D%s.txt", argv[1], argv[3], argv[2]);
 
     int N = atoi(argv[1]);
     int D = atoi(argv[2]);

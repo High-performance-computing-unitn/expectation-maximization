@@ -182,7 +182,7 @@ void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
         MPI_Allreduce(&local_log_l, &log_l_next, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
 
         if (my_rank == 0)
-            fprintf(log_file, "%f\n", log_l);
+            fprintf(log_file, "%f\n", log_l_next);
 
         if (roundf(log_l) == roundf(log_l_next))
         {

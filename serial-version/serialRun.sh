@@ -8,4 +8,4 @@
 
 module load mpich-3.2
 # arguments are                                                 N   D K iter filepath
-mpiexec -n 1 /expectation-maximization/serial-version/serialRun 800 5 4 10 "filepath"
+mpiexec -n 1 expectation-maximization/serial-version/serialRun 800 3 4 50 "expectation-maximization/data-generator/N800_K4_D3.csv"
