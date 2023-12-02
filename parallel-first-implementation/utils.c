@@ -3,7 +3,7 @@
 /*
     Function that copies the values of mean and covariance
 */
-void get_cluster_mean_cov(float *mean, float *cov, float *m_res, float *cov_res, int k, int D)
+void get_cluster_mean_cov(double *mean, double *cov, double *m_res, double *cov_res, int k, int D)
 {
     int start_ind = k * D * D;
     for (int r = 0; r < D; r++)
@@ -40,7 +40,7 @@ void divide_rows(int *data_count, int *data_displ, int *p_count, int *p_displ, i
     }
 }
 
-void free_em_data(float *X, float *mean, float *cov, float *weights, float *p_val)
+void free_em_data(double *X, double *mean, double *cov, double *weights, double *p_val)
 {
     free(X);
     free(weights);

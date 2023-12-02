@@ -48,7 +48,7 @@ void readFile(char *rows[MAX_LEN], char *FILE_PATH)
 /*
     Function that populates the matrix by parsing values in each row
 */
-void fill_matrix(float *mat, int N, int D, char *FILE_PATH)
+void fill_matrix(double *mat, int N, int D, char *FILE_PATH)
 {
     char *rows[MAX_LEN];
     readFile(rows, FILE_PATH);
@@ -61,7 +61,7 @@ void fill_matrix(float *mat, int N, int D, char *FILE_PATH)
         {
             if (ptr != delim)
             {
-                mat[row * D + col] = strtof(ptr, NULL); // convert element to float and store it in the matrix
+                mat[row * D + col] = strtof(ptr, NULL); // convert element to double and store it in the matrix
                 ptr = strtok(NULL, delim);
                 col++;
             }

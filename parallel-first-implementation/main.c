@@ -46,12 +46,12 @@ int main(int argc, char *argv[])
         fclose(log_file);
     }
 
-    float *examples = malloc((N * D) * sizeof(float));
+    double *examples = malloc((N * D) * sizeof(double));
 
-    float *weights = malloc((K) * sizeof(float));
-    float *mean = malloc((K * D) * sizeof(float));
-    float *covariance = malloc((K * D * D) * sizeof(float));
-    float *p_val = malloc((N * K) * sizeof(float));
+    double *weights = malloc((K) * sizeof(double));
+    double *mean = malloc((K * D) * sizeof(double));
+    double *covariance = malloc((K * D * D) * sizeof(double));
+    double *p_val = malloc((N * K) * sizeof(double));
 
     int *data_count = (int *)malloc(comm_sz * sizeof(int));
     int *data_displ = (int *)malloc(comm_sz * sizeof(int));
@@ -72,12 +72,12 @@ int main(int argc, char *argv[])
     {
         printf("Finish algorithm in %f\n", finish - start);
         // uncomment to print the result of the algorithm
-        //        for (int i = 0; i < N; i++) {
-        //            for (int d = 0; d < K; d++) {
-        //                printf("%f ", p_val[i * K + d]);
-        //            }
-        //            printf("\n");
-        //        }
+//                for (int i = 0; i < N; i++) {
+//                    for (int d = 0; d < K; d++) {
+//                        printf("%f ", p_val[i * K + d]);
+//                    }
+//                    printf("\n");
+//                }
     }
 
     free_em_data(examples, mean, covariance, weights, p_val);

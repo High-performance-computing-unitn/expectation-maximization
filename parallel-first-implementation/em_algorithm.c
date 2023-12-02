@@ -14,7 +14,7 @@
    The function that iteratively run expectation and maximization steps
    for n number of times.
 */
-void em_train(int n_iter, float *X, float *mean, float *cov, float *weights, float *p_val, int K, int N, int D)
+void em_train(int n_iter, double *X, double *mean, double *cov, double *weights, double *p_val, int K, int N, int D)
 {
     for (int i = 0; i < n_iter; i++)
     {
@@ -27,7 +27,7 @@ void em_train(int n_iter, float *X, float *mean, float *cov, float *weights, flo
     The function that initializes the initial values of mean
     in the range (0, 1).
 */
-void init_mean(float *mean, int K, int D)
+void init_mean(double *mean, int K, int D)
 {
     for (int k = 0; k < K; k++)
         for (int d = 0; d < D; d++)
@@ -39,7 +39,7 @@ void init_mean(float *mean, int K, int D)
     In order to make the matrix non-singular, it assigns the values
     in range (0, 1) in the main diagonal, and 1e-6 everywhere else.
 */
-void init_cov(float *cov, int K, int D)
+void init_cov(double *cov, int K, int D)
 {
     for (int k = 0; k < K; k++)
     {
@@ -59,7 +59,7 @@ void init_cov(float *cov, int K, int D)
     The function that initializes the initial values of the weights.
     All clusters will have equal weight initially equal to 1 / K, where K - number of clusters.
 */
-void init_weights(float *weights, int K)
+void init_weights(double *weights, int K)
 {
     for (int k = 0; k < K; k++)
         weights[k] = 1.f / K;
@@ -68,14 +68,14 @@ void init_weights(float *weights, int K)
 /*
     Function that initializes mean, covariance and weights.
 */
-void initialize(float *mean, float *cov, float *weights, int K, int D)
+void initialize(double *mean, double *cov, double *weights, int K, int D)
 {
     init_mean(mean, K, D);
     init_cov(cov, K, D);
     init_weights(weights, K);
 }
 
-void initialize_parallel(float *X, float *mean, float *cov, float *weights, int my_rank, int N, int D, int K, char *FILE_PATH)
+void initialize_parallel(double *X, double *mean, double *cov, double *weights, int my_rank, int N, int D, int K, char *FILE_PATH)
 {
     if (my_rank == 0)
     {
@@ -85,42 +85,42 @@ void initialize_parallel(float *X, float *mean, float *cov, float *weights, int 
     }
 }
 
-void divide_matrix_and_dist(float *X, float *local_examples, float *mean,
-                            float *cov, float *weights, int *data_count, int *data_displ,
+void divide_matrix_and_dist(double *X, double *local_examples, double *mean,
+                            double *cov, double *weights, int *data_count, int *data_displ,
                             int my_rank, int N, int D, int K)
 {
 
     // scatter matrix values to processes
-    MPI_Scatterv(X, data_count, data_displ, MPI_FLOAT, local_examples,
-                 data_count[my_rank], MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(X, data_count, data_displ, MPI_DOUBLE, local_examples,
+                 data_count[my_rank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // broadcast mean, covariance, weights to all processes
-    MPI_Bcast(mean, K * D, MPI_FLOAT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(cov, K * D * D, MPI_FLOAT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(weights, K, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(mean, K * D, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(cov, K * D * D, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(weights, K, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
 /*
     Function that computes the log likelihood to check for convergence
 */
-float log_likelihood(float *X, float *mean, float *cov, float *weights, int K, int N, int D)
+double log_likelihood(double *X, double *mean, double *cov, double *weights, int K, int N, int D)
 {
-    float log_l = 0;
+    double log_l = 0;
 
     for (int i = 0; i < N * D;) // iterate over the training examples
     { 
-        float *row = (float *)malloc(D * sizeof(float));
+        double *row = (double *)malloc(D * sizeof(double));
         for (int col = 0; col < D; col++)
             row[col] = X[i + col];
 
-        float s = 0;
+        double s = 0;
         for (int j = 0; j < K; j++)
         {
-            float *c = (float *)malloc(D * D * sizeof(float));
-            float *m = (float *)malloc(D * sizeof(float));
+            double *c = (double *)malloc(D * D * sizeof(double));
+            double *m = (double *)malloc(D * sizeof(double));
             get_cluster_mean_cov(mean, cov, m, c, j, D);
 
-            float g = gaussian(row, m, c, D) * weights[j]; // compute pdf
+            double g = gaussian(row, m, c, D) * weights[j]; // compute pdf
             if (!(g == g)) // g is Nan - matrix is singular
                 continue;
             s += g;
@@ -140,8 +140,8 @@ float log_likelihood(float *X, float *mean, float *cov, float *weights, int K, i
 /*
     Function that computes the EM algorithm parallel
 */
-void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
-                 float *p_val, int my_rank, int *data_count, int *data_displ,
+void em_parallel(int n_iter, double *X, double *mean, double *cov, double *weights,
+                 double *p_val, int my_rank, int *data_count, int *data_displ,
                  int *p_count, int *p_displ, int N, int D, int K, char *FILE_PATH)
 {
 
@@ -150,18 +150,18 @@ void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
     int row_per_process = data_count[my_rank] / D;
 
     // allocate memory for local matrix values
-    float *local_examples = malloc(data_count[my_rank] * sizeof(float));
+    double *local_examples = malloc(data_count[my_rank] * sizeof(double));
     // divide the matrix and distribute it to all processes
     divide_matrix_and_dist(X, local_examples, mean, cov, weights, data_count, data_displ, my_rank, N, D, K);
 
-    float *local_p_val = malloc(p_count[my_rank] * sizeof(float));
+    double *local_p_val = malloc(p_count[my_rank] * sizeof(double));
 
     // calc log likelihood
     int patience = 5; // patience to check the algorithm has really converged
-    float local_log_l = log_likelihood(local_examples, mean, cov, weights, K, row_per_process, D);
-    float log_l;
+    double local_log_l = log_likelihood(local_examples, mean, cov, weights, K, row_per_process, D);
+    double log_l;
     // sum the likelihood of all processes to check
-    MPI_Allreduce(&local_log_l, &log_l, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&local_log_l, &log_l, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
     // process 0 opens the file and store the first value
     FILE *log_file;
@@ -184,10 +184,10 @@ void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
         m_step_parallel(local_p_val, local_examples, mean, cov, weights, my_rank, row_per_process, K, D);
 
         // calc log likelihood
-        float local_log_l = log_likelihood(local_examples, mean, cov, weights, K, row_per_process, D);
-        float log_l_next;
+        double local_log_l = log_likelihood(local_examples, mean, cov, weights, K, row_per_process, D);
+        double log_l_next;
         // sum the likelihood of all processes to check
-        MPI_Allreduce(&local_log_l, &log_l_next, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&local_log_l, &log_l_next, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
         // process 0 stores the result
         if (my_rank == 0)
@@ -209,7 +209,7 @@ void em_parallel(int n_iter, float *X, float *mean, float *cov, float *weights,
         fclose(log_file);
 
     // gather p_val from the processes
-    MPI_Gatherv(local_p_val, p_count[my_rank], MPI_FLOAT, p_val, p_count, p_displ, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(local_p_val, p_count[my_rank], MPI_DOUBLE, p_val, p_count, p_displ, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     free(local_p_val);
 }

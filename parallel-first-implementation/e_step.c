@@ -8,32 +8,32 @@
 /*
     Function that returns the gaussian probability density estimate.
 */
-float gaussian(float *x, float *mean, float *cov, int D)
+double gaussian(double *x, double *mean, double *cov, int D)
 {
     // x - mean
-    float *x_u = (float *)malloc(D * sizeof(float));
+    double *x_u = (double *)malloc(D * sizeof(double));
     for (int i = 0; i < D; i++)
         x_u[i] = x[i] - mean[i];
 
     // calculate the inverse of the covariance matrix and the determinant
-    float det;
-    float *inv = (float *)malloc(D * D * sizeof(float));
+    double det;
+    double *inv = (double *)malloc(D * D * sizeof(double));
     inverse(cov, inv, &det, D);
 
     // multiply (x-mean) and inverse of covariance
-    float *x_u_inv = (float *)malloc(D * sizeof(float));
+    double *x_u_inv = (double *)malloc(D * sizeof(double));
     matmul(inv, x_u, x_u_inv, D);
     free(inv);
 
     // calculate the dot product of (x-mean) and the result of the previous step
-    float in_exp = dotProduct(x_u_inv, x_u, D);
+    double in_exp = dotProduct(x_u_inv, x_u, D);
     free(x_u);
     free(x_u_inv);
 
     // calculate the exponent
     in_exp = exp(-0.5 * in_exp);
 
-    float out_exp = 1. / sqrt(pow(2 * PI, D) * det);
+    double out_exp = 1. / sqrt(pow(2 * PI, D) * det);
 
     return out_exp * in_exp;
 }
@@ -41,7 +41,7 @@ float gaussian(float *x, float *mean, float *cov, int D)
 /*
     Function that resets the values of the covariance matrix if it becomes the singular.
 */
-void reset_cov(float *cov, int k, int D)
+void reset_cov(double *cov, int k, int D)
 {
     int start_ind = k * D * D;
 
@@ -56,7 +56,7 @@ void reset_cov(float *cov, int k, int D)
 /*
     Function that resets the values of the mean vector if the covariance matrix becomes the singular.
 */
-void reset_mean(float *mean, int k, int D)
+void reset_mean(double *mean, int k, int D)
 {
     int start_ind = k * D;
     for (int d = 0; d < D; d++)
@@ -68,26 +68,26 @@ void reset_mean(float *mean, int k, int D)
     Calculates the soft cluster assignment of each training example.
     Stores the results in the p_val matrix passed as an argument.
 */
-void e_step(float *X, float *mean, float *cov, float *weights, float *p_val, int K, int N, int D)
+void e_step(double *X, double *mean, double *cov, double *weights, double *p_val, int K, int N, int D)
 {
     int p_val_ind = 0;
 
     for (int i = 0; i < N * D;) // iterate over the training examples
     {
-        float *row = (float *)malloc(D * sizeof(float));
+        double *row = (double *)malloc(D * sizeof(double));
         for (int col = 0; col < D; col++)
             row[col] = X[i + col];
 
-        float p_x = 0.;                                        // the sum of pdf of all clusters
-        float *gaussians = (float *)malloc(K * sizeof(float)); // store the result of gaussian pdf to avoid computing it twice
+        double p_x = 0.;                                        // the sum of pdf of all clusters
+        double *gaussians = (double *)malloc(K * sizeof(double)); // store the result of gaussian pdf to avoid computing it twice
 
         for (int j = 0; j < K; j++) // iterate over clusters
         {
-            float *c = (float *)malloc(D * D * sizeof(float));
-            float *m = (float *)malloc(D * sizeof(float));
+            double *c = (double *)malloc(D * D * sizeof(double));
+            double *m = (double *)malloc(D * sizeof(double));
             get_cluster_mean_cov(mean, cov, m, c, j, D);
 
-            float g = gaussian(row, m, c, D) * weights[j]; // calculate pdf
+            double g = gaussian(row, m, c, D) * weights[j]; // calculate pdf
 
             if (!(g == g)) // g is Nan - matrix is singular
             {
@@ -109,7 +109,7 @@ void e_step(float *X, float *mean, float *cov, float *weights, float *p_val, int
 
         for (int j = 0; j < K; j++) // calculate probability for each cluster assignment
         { 
-            float pij = gaussians[j] / p_x;
+            double pij = gaussians[j] / p_x;
             p_val[p_val_ind + j] = pij;
         }
         free(gaussians);

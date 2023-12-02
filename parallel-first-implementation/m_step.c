@@ -5,11 +5,11 @@
     For each cluster it calculates the sum of probabilities of assignment to this cluster.
     Stores the result in res vector passed as a parameter.
 */
-void calc_sum_pij(float *p_val, float *res, int K, int N)
+void calc_sum_pij(double *p_val, double *res, int K, int N)
 {
     for (int k = 0; k < K; k++) // iterate over clusters
     {
-        float s = 0;
+        double s = 0;
         for (int i = 0; i < N; i++) // iterate over training examples
             s += p_val[i * K + k];  // add probability of assignment of example 'i' to cluster 'k'
         res[k] = s;
@@ -19,7 +19,7 @@ void calc_sum_pij(float *p_val, float *res, int K, int N)
 /*
     Calculate the numerator part of covariance matrix formula.
 */
-void calc_covariance_num(float *X, float *mean, float *cov, float *p_val, int K, int N, int D)
+void calc_covariance_num(double *X, double *mean, double *cov, double *p_val, int K, int N, int D)
 {
     // erase previous values of the covariance matrix for each cluster k
     for (int k = 0; k < K; k++)
@@ -30,7 +30,7 @@ void calc_covariance_num(float *X, float *mean, float *cov, float *p_val, int K,
                 cov[start_ind + r * D + c] = 0;
     }
 
-    float offset = 1e-6;
+    double offset = 1e-6;
 
     for (int k = 0; k < K; k++) // iterate over clusters
     {
@@ -51,7 +51,7 @@ void calc_covariance_num(float *X, float *mean, float *cov, float *p_val, int K,
 /*
     Function that updates the values of the covariance matrix for each cluster.
 */
-void m_step_covariance(float *cov, float *cov_num, float *sum_pij, int K, int D)
+void m_step_covariance(double *cov, double *cov_num, double *sum_pij, int K, int D)
 {
     for (int k = 0; k < K; k++) // iterate over clusters
     {
@@ -65,7 +65,7 @@ void m_step_covariance(float *cov, float *cov_num, float *sum_pij, int K, int D)
 /*
     Calculate the numerator part of the mean formula.
 */
-void calc_mean_num(float *X, float *p_val, float *res, int K, int N, int D)
+void calc_mean_num(double *X, double *p_val, double *res, int K, int N, int D)
 {
     for (int k = 0; k < K; k++)         // iterate over clusters
         for (int i = 0; i < N; i++)     // iterate over training examples
@@ -76,7 +76,7 @@ void calc_mean_num(float *X, float *p_val, float *res, int K, int N, int D)
 /*
     Function that updates the values of mean for each cluster.
 */
-void m_step_mean(float *mean, float *mean_nom, float *sum_pij, int K, int D)
+void m_step_mean(double *mean, double *mean_nom, double *sum_pij, int K, int D)
 {
     for (int k = 0; k < K; k++)
         for (int j = 0; j < D; j++)
@@ -87,9 +87,9 @@ void m_step_mean(float *mean, float *mean_nom, float *sum_pij, int K, int D)
 /*
     Function that updates the values of weights for each cluster.
 */
-void m_step_weights(float *sum_pij, float *weights, int K)
+void m_step_weights(double *sum_pij, double *weights, int K)
 {
-    float den = 0;
+    double den = 0;
     for (int k = 0; k < K; k++)
         den += sum_pij[k];
     for (int k = 0; k < K; k++)
@@ -99,13 +99,13 @@ void m_step_weights(float *sum_pij, float *weights, int K)
 /*
     Function that computes the m step.
 */
-void m_step(float *X, float *mean, float *cov, float *weights, float *p_val, int K, int N, int D)
+void m_step(double *X, double *mean, double *cov, double *weights, double *p_val, int K, int N, int D)
 {
-    float *sum_pij = (float *)malloc(K * sizeof(float));
+    double *sum_pij = (double *)malloc(K * sizeof(double));
     calc_sum_pij(p_val, sum_pij, K, N);
 
     // update mean
-    float *mean_num = (float *)malloc(K * D * sizeof(float));
+    double *mean_num = (double *)malloc(K * D * sizeof(double));
     calc_mean_num(X, p_val, mean_num, K, N, D);
     m_step_mean(mean, mean_num, sum_pij, K, D);
     free(mean_num);
@@ -119,27 +119,29 @@ void m_step(float *X, float *mean, float *cov, float *weights, float *p_val, int
     free(sum_pij);
 }
 
-void parallel_sum_pij(float *local_p_val, float *sum_pi, int row_per_process, int K)
+
+void parallel_sum_pij(double *local_p_val, double *sum_pi, int row_per_process, int K)
 {
     // each process computes sum pi
-    float *local_sum_pi = malloc(K * sizeof(float));
+    double *local_sum_pi = malloc(K * sizeof(double));
     calc_sum_pij(local_p_val, local_sum_pi, K, row_per_process);
 
     // collect sum from all processes and distribute result
-    MPI_Reduce(local_sum_pi, sum_pi, K, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(local_sum_pi, sum_pi, K, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     free(local_sum_pi);
 }
 
-void parallel_mean(float *local_examples, float *local_p_val, float *sum_pi,
-                   float *mean, int my_rank, int row_per_process, int K, int D)
+
+void parallel_mean(double *local_examples, double *local_p_val, double *sum_pi,
+                   double *mean, int my_rank, int row_per_process, int K, int D)
 {
     // each process calculate mean numerator of its local examples
-    float *local_mean_num = malloc(K * D * sizeof(float));
+    double *local_mean_num = malloc(K * D * sizeof(double));
     calc_mean_num(local_examples, local_p_val, local_mean_num, K, row_per_process, D);
 
     // calculate sum across all processes and send result to process 0
-    float *total_mean_num = malloc(K * D * sizeof(float));
-    MPI_Reduce(local_mean_num, total_mean_num, K * D, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    double *total_mean_num = malloc(K * D * sizeof(double));
+    MPI_Reduce(local_mean_num, total_mean_num, K * D, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     free(local_mean_num);
 
     // update mean values
@@ -148,18 +150,19 @@ void parallel_mean(float *local_examples, float *local_p_val, float *sum_pi,
     free(total_mean_num);
 
     // broadcast mean values to all processes
-    MPI_Bcast(mean, K * D, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(mean, K * D, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
-void parallel_cov(float *local_examples, float *local_p_val, float *mean, float *sum_pi,
-                  float *cov, int my_rank, int row_per_process, int K, int D)
+
+void parallel_cov(double *local_examples, double *local_p_val, double *mean, double *sum_pi,
+                  double *cov, int my_rank, int row_per_process, int K, int D)
 {
-    float *local_cov_num = malloc(K * D * D * sizeof(float));
+    double *local_cov_num = malloc(K * D * D * sizeof(double));
     calc_covariance_num(local_examples, mean, local_cov_num, local_p_val, K, row_per_process, D);
 
     // calculate sum across all processes and send result to process 0
-    float *total_cov_num = malloc(K * D * D * sizeof(float));
-    MPI_Reduce(local_cov_num, total_cov_num, K * D * D, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    double *total_cov_num = malloc(K * D * D * sizeof(double));
+    MPI_Reduce(local_cov_num, total_cov_num, K * D * D, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     free(local_cov_num);
 
     // update cov values
@@ -168,24 +171,26 @@ void parallel_cov(float *local_examples, float *local_p_val, float *mean, float 
     free(total_cov_num);
 
     // broadcast cov values to all processes
-    MPI_Bcast(cov, K * D * D, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(cov, K * D * D, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
-void parallel_weights(float *sum_pi, float *weights, int my_rank, int K)
+
+void parallel_weights(double *sum_pi, double *weights, int my_rank, int K)
 {
     // process 0 updates weights
     if (my_rank == 0)
         m_step_weights(sum_pi, weights, K);
 
     // broadcast cov values to all processes
-    MPI_Bcast(weights, K, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(weights, K, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
-void m_step_parallel(float *local_p_val, float *local_examples, float *mean,
-                     float *cov, float *weights, int my_rank, int row_per_process, int K, int D)
+
+void m_step_parallel(double *local_p_val, double *local_examples, double *mean,
+                     double *cov, double *weights, int my_rank, int row_per_process, int K, int D)
 {
     // M STEP
-    float *sum_pi = malloc(K * sizeof(float));
+    double *sum_pi = malloc(K * sizeof(double));
     parallel_sum_pij(local_p_val, sum_pi, row_per_process, K);
 
     // calc mean
