@@ -11,7 +11,13 @@ void calc_sum_pij(double *p_val, double *res, int K, int N)
     {
         double s = 0;
         for (int i = 0; i < N; i++) // iterate over training examples
+        {
             s += p_val[i * K + k];  // add probability of assignment of example 'i' to cluster 'k'
+        }
+
+        if (s==0) {
+            s = 1e-52;
+        }
         res[k] = s;
     }
 }

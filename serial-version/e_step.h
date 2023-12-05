@@ -2,12 +2,12 @@
 #define EM_PROJECT_E_STEP_SERIAL
 
 // returns the gaussian probability density estimate
-float gaussian(float *x, float *mean, float *cov, int D);
+double gaussian(double *x, double *mean, double *cov, int D);
 
 // copy values of mean and covariance
-void get_cluster_mean_cov(float *mean, float *cov, float *m_res, float *cov_res, int k, int D);
+void get_cluster_mean_cov(double *mean, double *cov, double *m_res, double *cov_res, int k, int D);
 
 // run expectation step
-void e_step(float *X, float *mean, float *cov, float *weights, float *p_val, int K, int N, int D);
+void e_step(double *X, double *mean, double *cov, double *weights, double *p_val, int K, int N, int D);
 
 #endif 

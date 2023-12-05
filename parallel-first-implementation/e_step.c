@@ -105,7 +105,7 @@ void e_step(double *X, double *mean, double *cov, double *weights, double *p_val
         free(row);
 
         if (p_x == 0) // assign small value to avoid zero division
-            p_x = 1e-5;
+            p_x = 1e-52;
 
         for (int j = 0; j < K; j++) // calculate probability for each cluster assignment
         { 

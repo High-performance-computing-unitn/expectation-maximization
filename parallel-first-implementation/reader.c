@@ -66,5 +66,6 @@ void fill_matrix(double *mat, int N, int D, char *FILE_PATH)
                 col++;
             }
         }
+        col = 0;
     }
 }

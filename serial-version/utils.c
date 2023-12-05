@@ -7,7 +7,7 @@
  * https://www.geeksforgeeks.org/adjoint-inverse-matrix/
  */
 
-void getCofactor(float *A, float *temp, int p, int q, int n)
+void getCofactor(double *A, double *temp, int p, int q, int n)
 {
     int i = 0, j = 0;
 
@@ -36,15 +36,15 @@ void getCofactor(float *A, float *temp, int p, int q, int n)
 /*
     Function that computes the determinant of the matrix
 */
-float determinant(float *A, int n)
+double determinant(double *A, int n)
 {
-    float det = 0;
+    double det = 0;
 
     // Base case: if the matrix contains a single element
     if (n == 1)
         return A[0];
 
-    float *temp = (float *)malloc(n * n * sizeof(float));
+    double *temp = (double *)malloc(n * n * sizeof(double));
 
     int sign = 1;
 
@@ -63,7 +63,7 @@ float determinant(float *A, int n)
     return det;
 }
 
-void adjoint(float *A, float *adj, int n)
+void adjoint(double *A, double *adj, int n)
 {
     // Base case: if the matrix contains a single element
     if (n == 1)
@@ -74,7 +74,7 @@ void adjoint(float *A, float *adj, int n)
 
     // Temp is used to store cofactors of A[][]
     int sign = 1;
-    float *temp = (float *)malloc(n * n * sizeof(float));
+    double *temp = (double *)malloc(n * n * sizeof(double));
 
     for (int i = 0; i < n; i++)
     {
@@ -97,13 +97,13 @@ void adjoint(float *A, float *adj, int n)
 /*
     Function that calculate the inverse of the input matrix and calculate the determinant
 */
-void inverse(float *A, float *inv, float *det, int n)
+void inverse(double *A, double *inv, double *det, int n)
 {
     // Find the determinant of A[][]
     *det = determinant(A, n);
 
     // Find the adjoint
-    float *adj = (float *)malloc(n * n * sizeof(float));
+    double *adj = (double *)malloc(n * n * sizeof(double));
     adjoint(A, adj, n);
 
     // Find the inverse using the formula "inverse(A) = adj(A)/det(A)"
@@ -118,13 +118,13 @@ void inverse(float *A, float *inv, float *det, int n)
     Function that performs matrix vector multiplication
     and stores the result in the res vector passed as an argument.
 */
-void matmul(float *mat, float *vec, float *res, int D)
+void matmul(double *mat, double *vec, double *res, int D)
 {
     for (int i = 0; i < D; i++)
     {
         res[i] = 0;
         for (int j = 0; j < D; j++)
-            res[i] += mat[i * D + j] * (float)vec[j];
+            res[i] += mat[i * D + j] * (double)vec[j];
     }
 }
 
@@ -132,9 +132,9 @@ void matmul(float *mat, float *vec, float *res, int D)
     Function that calculates the dot product between two vectors
     and returns the results.
 */
-float dotProduct(float *a, float *b, int D)
+double dotProduct(double *a, double *b, int D)
 {
-    float result = 0.0;
+    double result = 0.0;
     for (int i = 0; i < D; i++)
         result += a[i] * b[i];
     return result;
@@ -143,10 +143,10 @@ float dotProduct(float *a, float *b, int D)
 /*
     Function that performs z-score normalization on the training examples.
 */
-void standardize(float *data, int N, int D)
+void standardize(double *data, int N, int D)
 {
     // Calculate the mean for each dimension
-    float *mean = malloc(D * sizeof(float));
+    double *mean = malloc(D * sizeof(double));
     for (int j = 0; j < D; j++)
     {
         mean[j] = 0.0;
@@ -156,7 +156,7 @@ void standardize(float *data, int N, int D)
     }
 
     // Calculate the standard deviation for each dimension
-    float *stdDev = malloc(D * sizeof(float));
+    double *stdDev = malloc(D * sizeof(double));
     for (int j = 0; j < D; j++)
     {
         stdDev[j] = 0.0;

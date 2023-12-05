@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     int max_iter = atoi(argv[4]);
     char *FILE_PATH = argv[5];
 
-    float *examples = malloc((N * D) * sizeof(float));
+    double *examples = malloc((N * D) * sizeof(double));
     fill_matrix(examples, N, D, FILE_PATH); // fill the matrix of samples
 
     clock_t end = clock(); // get ending time for file reading
@@ -40,10 +40,10 @@ int main(int argc, char *argv[])
     start = clock(); // get starting time for EM algorithm
     standardize(examples, N, D); // standardize the examples
 
-    float *weights = malloc((K) * sizeof(float));
-    float *mean = malloc((K * D) * sizeof(float));
-    float *covariance = malloc((K * D * D) * sizeof(float));
-    float *p_val = malloc((N * K) * sizeof(float));
+    double *weights = malloc((K) * sizeof(double));
+    double *mean = malloc((K * D) * sizeof(double));
+    double *covariance = malloc((K * D * D) * sizeof(double));
+    double *p_val = malloc((N * K) * sizeof(double));
 
     initialize(mean, covariance, weights, K, D); // initialize mean, covariance and weights
 
@@ -53,14 +53,14 @@ int main(int argc, char *argv[])
     printf("Completed in: %f seconds with: %d samples\n", (double)(end - start) / CLOCKS_PER_SEC, N);
 
     // uncomment to print results of the algorithm
-    //  for (int i = 0; i < N; i++)
-    //  {
-    //      for (int j = 0; j < K; j++)
-    //      {
-    //          printf("%f ", p_val[i * K + j]);
-    //      }
-    //      printf("\n");
-    //  }
+//      for (int i = 0; i < N; i++)
+//      {
+//          for (int j = 0; j < K; j++)
+//          {
+//              printf("%f ", p_val[i * K + j]);
+//          }
+//          printf("\n");
+//      }
 
     free(weights);
     free(mean);

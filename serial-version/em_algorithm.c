@@ -9,24 +9,24 @@
 /*
     Function that computes the log likelihood to check if the algorithm is converging
 */
-float log_likelihood(float *X, float *mean, float *cov, float *weights, int K, int N, int D)
+double log_likelihood(double *X, double *mean, double *cov, double *weights, int K, int N, int D)
 {
-    float log_l = 0;
+    double log_l = 0;
 
     for (int i = 0; i < N * D;) // iterate over the training examples
     { 
-        float *row = (float *)malloc(D * sizeof(float));
+        double *row = (double *)malloc(D * sizeof(double));
         for (int col = 0; col < D; col++)
             row[col] = X[i + col];
 
-        float s = 0;
+        double s = 0;
         for (int j = 0; j < K; j++)
         {
-            float *c = (float *)malloc(D * D * sizeof(float));
-            float *m = (float *)malloc(D * sizeof(float));
+            double *c = (double *)malloc(D * D * sizeof(double));
+            double *m = (double *)malloc(D * sizeof(double));
             get_cluster_mean_cov(mean, cov, m, c, j, D); // copy mean and covariance
 
-            float g = gaussian(row, m, c, D) * weights[j]; // compute pdf 
+            double g = gaussian(row, m, c, D) * weights[j]; // compute pdf
             if (!(g == g)) // g is Nan - matrix is singular
                 continue;
             s += g;
@@ -46,10 +46,10 @@ float log_likelihood(float *X, float *mean, float *cov, float *weights, int K, i
 /*
    The function that iteratively run expectation and maximization steps for n iterations or until convergence.
 */
-void em_train(int n_iter, float *X, float *mean, float *cov, float *weights, float *p_val, int K, int N, int D)
+void em_train(int n_iter, double *X, double *mean, double *cov, double *weights, double *p_val, int K, int N, int D)
 {
     int patience = 5; // offset for convergence
-    float log_l = log_likelihood(X, mean, cov, weights, K, N, D); // compute log likelihood
+    double log_l = log_likelihood(X, mean, cov, weights, K, N, D); // compute log likelihood
 
     // open file for log likelihood and print the first value
     FILE *log_file = fopen(log_filepath, "a");
@@ -61,12 +61,13 @@ void em_train(int n_iter, float *X, float *mean, float *cov, float *weights, flo
     fprintf(log_file, "%f\n", log_l);
 
     // EM steps
+
     for (int i = 0; i < n_iter; i++)
     {
         e_step(X, mean, cov, weights, p_val, K, N, D); //e step
         m_step(X, mean, cov, weights, p_val, K, N, D); //m step
 
-        float log_l_next = log_likelihood(X, mean, cov, weights, K, N, D); // compute log likelihood
+        double log_l_next = log_likelihood(X, mean, cov, weights, K, N, D); // compute log likelihood
 
         fprintf(log_file, "%f\n", log_l_next); // write result on file
 
@@ -86,7 +87,7 @@ void em_train(int n_iter, float *X, float *mean, float *cov, float *weights, flo
 /*
     The function that initializes the initial values of mean in the range (0, 1).
 */
-void init_mean(float *mean, int K, int D)
+void init_mean(double *mean, int K, int D)
 {
     for (int k = 0; k < K; k++)
         for (int d = 0; d < D; d++)
@@ -98,7 +99,7 @@ void init_mean(float *mean, int K, int D)
     In order to make the matrix non-singular, it assigns the values
     in range (0, 1) in the main diagonal, and 1e-6 everywhere else.
 */
-void init_cov(float *cov, int K, int D)
+void init_cov(double *cov, int K, int D)
 {
     for (int k = 0; k < K; k++)
     {
@@ -106,9 +107,9 @@ void init_cov(float *cov, int K, int D)
         for (int r = 0; r < D; r++)
             for (int c = 0; c < D; c++)
                 if (r == c)
-                    cov[start_ind + r * D + c] = (rand() % 10 + 1) * 0.1;
+                    cov[start_ind + r * D + c] = 1.;
                 else
-                    cov[start_ind + r * D + c] = 1e-6;
+                    cov[start_ind + r * D + c] = 0.;
     }
 }
 
@@ -116,7 +117,7 @@ void init_cov(float *cov, int K, int D)
     The function that initializes the initial values of the weights.
     All clusters will have equal weight initially equal to 1 / K, where K - number of clusters.
 */
-void init_weights(float *weights, int K)
+void init_weights(double *weights, int K)
 {
     for (int k = 0; k < K; k++)
         weights[k] = 1.f / K;
@@ -125,7 +126,7 @@ void init_weights(float *weights, int K)
 /*
     Function that initializes mean, covariance and weights.
 */
-void initialize(float *mean, float *cov, float *weights, int K, int D)
+void initialize(double *mean, double *cov, double *weights, int K, int D)
 {
     init_mean(mean, K, D);
     init_cov(cov, K, D);
