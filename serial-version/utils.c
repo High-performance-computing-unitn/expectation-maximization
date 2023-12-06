@@ -44,7 +44,7 @@ double determinant(double *A, int n)
     if (n == 1)
         return A[0];
 
-    double *temp = (double *)malloc(n * n * sizeof(double));
+    double *temp = (double *)calloc(n * n, sizeof(double));
 
     int sign = 1;
 
@@ -74,7 +74,7 @@ void adjoint(double *A, double *adj, int n)
 
     // Temp is used to store cofactors of A[][]
     int sign = 1;
-    double *temp = (double *)malloc(n * n * sizeof(double));
+    double *temp = (double *)calloc(n * n, sizeof(double));
 
     for (int i = 0; i < n; i++)
     {
@@ -87,7 +87,7 @@ void adjoint(double *A, double *adj, int n)
             sign = ((i + j) % 2 == 0) ? 1 : -1;
 
             // Interchange rows and columns to get the transpose of the cofactor matrix
-            adj[j * n + i] = (sign) * (determinant(temp, n - 1));
+            adj[j * n + i] = sign * determinant(temp, n - 1);
         }
     }
 
@@ -97,21 +97,23 @@ void adjoint(double *A, double *adj, int n)
 /*
     Function that calculate the inverse of the input matrix and calculate the determinant
 */
-void inverse(double *A, double *inv, double *det, int n)
+double inverse(double *A, double *inv, int n)
 {
     // Find the determinant of A[][]
-    *det = determinant(A, n);
+    double det = determinant(A, n);
 
     // Find the adjoint
-    double *adj = (double *)malloc(n * n * sizeof(double));
+    double *adj = (double *)calloc(n * n, sizeof(double));
     adjoint(A, adj, n);
 
     // Find the inverse using the formula "inverse(A) = adj(A)/det(A)"
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++)
-            inv[i * n + j] = adj[j * n + i] / *det;
+            inv[i * n + j] = adj[j * n + i] / det;
 
     free(adj);
+
+    return det;
 }
 
 /*
@@ -146,7 +148,7 @@ double dotProduct(double *a, double *b, int D)
 void standardize(double *data, int N, int D)
 {
     // Calculate the mean for each dimension
-    double *mean = malloc(D * sizeof(double));
+    double *mean = calloc(D, sizeof(double));
     for (int j = 0; j < D; j++)
     {
         mean[j] = 0.0;
@@ -156,7 +158,7 @@ void standardize(double *data, int N, int D)
     }
 
     // Calculate the standard deviation for each dimension
-    double *stdDev = malloc(D * sizeof(double));
+    double *stdDev = calloc(D, sizeof(double));
     for (int j = 0; j < D; j++)
     {
         stdDev[j] = 0.0;

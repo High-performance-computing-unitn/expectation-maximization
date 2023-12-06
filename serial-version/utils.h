@@ -2,7 +2,7 @@
 #define EM_PROJECT_UTILS_SERIAL
 
 // calculate the inverse of matrix
-void inverse(double *A, double *inv, double *det, int n); // Function to calculate and store inverse
+double inverse(double *A, double *inv, int n); // Function to calculate and store inverse
 
 // calculate matrix-vector multiplication
 void matmul(double *mat, double *vec, double *res, int D);

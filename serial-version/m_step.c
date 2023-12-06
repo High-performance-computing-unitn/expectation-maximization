@@ -103,11 +103,11 @@ void m_step_weights(double *sum_pij, double *weights, int K)
 
 void m_step(double *X, double *mean, double *cov, double *weights, double *p_val, int K, int N, int D)
 {
-    double *sum_pij = (double *)malloc(K * sizeof(double));
+    double *sum_pij = (double *)calloc(K, sizeof(double));
     calc_sum_pij(p_val, sum_pij, K, N);
 
     // update mean
-    double *mean_num = (double *)malloc(K * D * sizeof(double));
+    double *mean_num = (double *)calloc(K * D, sizeof(double));
     calc_mean_num(X, p_val, mean_num, K, N, D);
     m_step_mean(mean, mean_num, sum_pij, K, D);
     free(mean_num);

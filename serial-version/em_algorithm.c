@@ -15,15 +15,15 @@ double log_likelihood(double *X, double *mean, double *cov, double *weights, int
 
     for (int i = 0; i < N * D;) // iterate over the training examples
     { 
-        double *row = (double *)malloc(D * sizeof(double));
+        double *row = (double *)calloc(D, sizeof(double));
         for (int col = 0; col < D; col++)
             row[col] = X[i + col];
 
         double s = 0;
         for (int j = 0; j < K; j++)
         {
-            double *c = (double *)malloc(D * D * sizeof(double));
-            double *m = (double *)malloc(D * sizeof(double));
+            double *c = (double *)calloc(D * D, sizeof(double));
+            double *m = (double *)calloc(D, sizeof(double));
             get_cluster_mean_cov(mean, cov, m, c, j, D); // copy mean and covariance
 
             double g = gaussian(row, m, c, D) * weights[j]; // compute pdf
