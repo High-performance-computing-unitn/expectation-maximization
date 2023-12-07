@@ -1,14 +1,11 @@
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
-#include "constants.h"
+#include <mpi.h>
 
 /*
  * Code for matrix inverse taken from
  * https://www.geeksforgeeks.org/adjoint-inverse-matrix/
- * Code for determinant taken from
- * https://matematicamente.it/forum/viewtopic.php?f=15&t=145130
  */
 
 double d_abs(double d)
@@ -66,7 +63,7 @@ double factorize(double *matrix, int n)
     return parity;
 }
 
-double determinant(double *m, int n, int starting_index)
+double determinant(double *m, int n)
 {
     // if matrix is grater than 3x3 compute as follows
     if (n > 3)
@@ -78,7 +75,7 @@ double determinant(double *m, int n, int starting_index)
             // copy the input matrix with threads to avoid changing its values
             #pragma omp parallel for
             for (int i = 0; i < n2; i++)
-                matrix[i] = m[starting_index + i];
+                matrix[i] = m[i];
 
             double det = factorize(matrix, n); // factorize matrix
 
@@ -101,23 +98,23 @@ double determinant(double *m, int n, int starting_index)
     }
     else if (n == 3) // if matrix is less then or equal to 3x3 in size compute determinant by hand
     {
-        return (m[starting_index] * (m[starting_index + 4] * m[starting_index + 8] - m[starting_index + 5] * m[starting_index + 7])
-                - m[starting_index + 1] * (m[starting_index + 3] * m[starting_index + 8] - m[starting_index + 5] * m[starting_index + 6])
-                + m[starting_index + 2] * (m[starting_index + 3] * m[starting_index + 7] - m[starting_index + 4] * m[starting_index + 6]));
+        return (m[0] * (m[4] * m[8] - m[5] * m[7])
+                - m[1] * (m[3] * m[8] - m[5] * m[6])
+                + m[2] * (m[3] * m[7] - m[4] * m[6]));
     }
     else if (n == 2)
     {
-        return (m[starting_index] * m[starting_index + 3] - m[starting_index + 1] * m[starting_index + 2]);
+        return (m[0] * m[3] - m[1] * m[2]);
     }
     else if (n == 1)
     {
-        return m[starting_index];
+        return m[0];
     }
     else
         return 0.;
 }
 
-void getCofactor(double *cov, double *temp, int p, int q, int n, int starting_index)
+void getCofactor(double *A, double *temp, int p, int q, int n)
 {
     int i = 0, j = 0;
 
@@ -128,7 +125,7 @@ void getCofactor(double *cov, double *temp, int p, int q, int n, int starting_in
             // Copying into the temporary matrix only those elements that are not in the given row and column
             if (row != p && col != q)
             {
-                temp[i * (n - 1) + j] = cov[starting_index + row * n + col];
+                temp[i * (n - 1) + j] = A[row * n + col];
                 j++;
 
                 // Row is filled, so increase row index and reset col index
@@ -142,7 +139,34 @@ void getCofactor(double *cov, double *temp, int p, int q, int n, int starting_in
     }
 }
 
-void adjoint(double *cov, double *adj, int n, int starting_index)
+// double determinant(double *A, int n)
+// {
+//     double det = 0;
+
+//     // Base case: if the matrix contains a single element
+//     if (n == 1)
+//         return A[0];
+
+//     double *temp = (double *)calloc(n * n, sizeof(double));
+
+//     int sign = 1;
+
+//     for (int f = 0; f < n; f++)
+//     {
+//         // Getting the cofactor of A[0][f]
+//         getCofactor(A, temp, 0, f, n);
+//         det += sign * A[f] * determinant(temp, n - 1);
+
+//         // Terms are to be added with alternate sign
+//         sign = -sign;
+//     }
+
+//     free(temp);
+
+//     return det;
+// }
+
+void adjoint(double *A, double *adj, int n)
 {
     if (n == 1)
     {
@@ -159,30 +183,27 @@ void adjoint(double *cov, double *adj, int n, int starting_index)
         for (int j = 0; j < n; j++)
         {
             // Get the cofactor of A[i][j]
-            getCofactor(cov, temp, i, j, n, starting_index);
+            getCofactor(A, temp, i, j, n);
 
             // Sign of adj[j][i] is positive if the sum of row and column indexes is even.
             sign = ((i + j) % 2 == 0) ? 1 : -1;
 
             // Interchange rows and columns to get the transpose of the cofactor matrix
-            adj[j * n + i] = (sign) * (determinant(temp, n - 1, starting_index));
+            adj[j * n + i] = (sign) * (determinant(temp, n - 1));
         }
     }
 
     free(temp);
 }
 
-/*
-    Function that computes the inverse of the imput matrix and calculate its determinant
-*/
-void inverse(double *cov, double *inv, double *det, int n, int starting_index)
+void inverse(double *A, double *inv, double *det, int n)
 {
     // Find the determinant of A[][]
-    *det = determinant(cov, n, starting_index);
+    *det = determinant(A, n);
 
     // Find the adjoint
     double *adj = (double *)calloc(n * n, sizeof(double));
-    adjoint(cov, adj, n, starting_index);
+    adjoint(A, adj, n);
 
     // Find the inverse using the formula "inverse(A) = adj(A)/det(A)"
     for (int i = 0; i < n; i++)
@@ -193,9 +214,10 @@ void inverse(double *cov, double *inv, double *det, int n, int starting_index)
 }
 
 /*
-    Function that performs matrix vector multiplication and stores the result in the res vector passed as an argument.
+    Function that performs matrix vector multiplication
+    and stores the result in the res vector passed as an argument.
 */
-void matmul(double *mat, double *vec, double *res)
+void matmul(double *mat, double *vec, double *res, int D)
 {
     for (int i = 0; i < D; i++)
     {
@@ -206,9 +228,10 @@ void matmul(double *mat, double *vec, double *res)
 }
 
 /*
-    Function that calculates the dot product between two vectors and returns the results.
+    Function that calculates the dot product between two vectors
+    and returns the results.
 */
-double dotProduct(double *a, double *b)
+double dotProduct(double *a, double *b, int D)
 {
     double result = 0.0;
     for (int i = 0; i < D; i++)
@@ -219,33 +242,49 @@ double dotProduct(double *a, double *b)
 /*
     Function that performs z-score normalization on the training examples.
 */
-void standardize(Sample *data, int sample_size)
+void standardize(double *data, int row_per_process, int world_size, int D)
 {
     // Calculate the mean for each dimension
-    double *mean = (double *)calloc(D, sizeof(double));
+    double *local_mean = calloc(D, sizeof(double));
     for (int j = 0; j < D; j++)
     {
-        mean[j] = 0.0;
-        for (int i = 0; i < sample_size; i++)
-            mean[j] += data[i].dimensions[j];
-        mean[j] /= sample_size;
+        local_mean[j] = 0.0;
+        for (int i = 0; i < row_per_process; i++)
+            local_mean[j] += data[i * D + j];
+        local_mean[j] /= row_per_process;
     }
+
+    double *global_mean = calloc(D, sizeof(double));
+
+    MPI_Allreduce(local_mean, global_mean, D, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+    for (int i = 0; i < D; i++)
+        global_mean[i] /= world_size;
 
     // Calculate the standard deviation for each dimension
-    double *stdDev = (double *)calloc(D, sizeof(double));
+    double *local_stdDev = calloc(D, sizeof(double));
     for (int j = 0; j < D; j++)
     {
-        stdDev[j] = 0.0;
-        for (int i = 0; i < sample_size; i++)
-            stdDev[j] += pow(data[i].dimensions[j] - mean[j], 2);
-        stdDev[j] = sqrt(stdDev[j] / (sample_size - 1));
+        local_stdDev[j] = 0.0;
+        for (int i = 0; i < row_per_process; i++)
+            local_stdDev[j] += pow(data[i * D + j] - global_mean[j], 2);
+        local_stdDev[j] = sqrt(local_stdDev[j] / (row_per_process - 1));
     }
 
-    // Perform standardization
-    for (int i = 0; i < sample_size; i++)
-        for (int j = 0; j < D; j++)
-            data[i].dimensions[j] = (data[i].dimensions[j] - mean[j]) / stdDev[j];
+    double * global_stdDev = calloc(D, sizeof(double));
 
-    free(mean);
-    free(stdDev);
+    MPI_Allreduce(local_stdDev, global_stdDev, D, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+    for (int i = 0; i < D; i++)
+        global_stdDev[i] /= world_size;
+
+    // Perform standardization
+    for (int i = 0; i < row_per_process; i++)
+        for (int j = 0; j < D; j++)
+            data[i * D + j] = (data[i * D + j] - global_mean[j]) / global_stdDev[j];
+
+    free(local_mean);
+    free(global_mean);
+    free(local_stdDev);
+    free(global_stdDev);
 }
