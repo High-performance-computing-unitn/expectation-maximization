@@ -60,12 +60,14 @@ int main(int argc, char *argv[])
 
     divide_rows(data_count, data_displ, p_count, p_displ, N, D, K, comm_sz); // divide rows among processes
 
+    MPI_Barrier(MPI_COMM_WORLD);
     start = MPI_Wtime();
 
     em_parallel(max_iter, examples, mean, covariance,
                 weights, p_val, my_rank, data_count, data_displ,
                 p_count, p_displ, N, D, K, FILE_PATH);
-
+        
+    MPI_Barrier(MPI_COMM_WORLD);
     finish = MPI_Wtime();
 
     if (my_rank == 0)

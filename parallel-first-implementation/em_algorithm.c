@@ -79,7 +79,10 @@ void initialize_parallel(double *X, double *mean, double *cov, double *weights, 
 {
     if (my_rank == 0)
     {
+        double start = MPI_Wtime();
         fill_matrix(X, N, D, FILE_PATH);
+        double finish = MPI_Wtime();
+        printf("Time to read file: %f seconds with: %d samples\n", finish - start, N);
         standardize(X, N, D);
         initialize(mean, cov, weights, K, D);
     }
