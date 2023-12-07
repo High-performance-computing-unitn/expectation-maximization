@@ -35,8 +35,8 @@ int main(int argc, char *argv[])
     // create the log likelihood file path and write first line
     if (my_rank == 0)
     {
-        snprintf(log_filepath, sizeof(log_filepath), "expectation-maximization/parallel-second-implementation-t/log-likelihood-results/N%s_K%s_D%s.txt", argv[1], argv[3], argv[2]);
-        FILE *log_file = fopen(log_filepath, "w");
+        snprintf(log_filepath, sizeof(log_filepath), "expectation-maximization/parallel-second-implementation/log-likelihood-results/N%s_K%s_D%s.txt", argv[1], argv[3], argv[2]);
+        FILE *log_file = fopen(log_filepath, "a");
         if (log_file == NULL)
         {
             printf("Error opening the log likelihood file!");
