@@ -8,4 +8,4 @@
 
 module load mpich-3.2
 # arguments are                     executable                                  N   D K iter filepath
-mpiexec -n 4 expectation-maximization/parallel-first-implementation/parallelRun 800 3 4 100 "expectation-maximization/data-generator/N800_K4_D3.csv"
+mpiexec -n 4 expectation-maximization/parallel-first-implementation/parallelRun 800 3 4 200 "expectation-maximization/data-generator/N800_K4_D3.csv"

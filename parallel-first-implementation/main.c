@@ -9,7 +9,7 @@
 #include "linear_op.h"
 #include "e_step.h"
 #include "m_step.h"
-#include "reader.h"
+#include "file_reader.h"
 
 char log_filepath[1024];
 

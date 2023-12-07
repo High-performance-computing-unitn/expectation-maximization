@@ -7,7 +7,7 @@
 #include "m_step.h"
 #include "e_step.h"
 #include "linear_op.h"
-#include "reader.h"
+#include "file_reader.h"
 #include "utils.h"
 
 /*
