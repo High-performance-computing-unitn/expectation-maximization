@@ -12,10 +12,11 @@ void calc_sum_pij(double *p_val, double *res, int K, int N)
         double s = 0;
         for (int i = 0; i < N; i++) // iterate over training examples
         {
-            s += p_val[i * K + k];  // add probability of assignment of example 'i' to cluster 'k'
+            s += p_val[i * K + k]; // add probability of assignment of example 'i' to cluster 'k'
         }
 
-        if (s==0) {
+        if (s == 0)
+        {
             s = 1e-52;
         }
         res[k] = s;
@@ -107,11 +108,11 @@ void m_step_weights(double *sum_pij, double *weights, int K)
 */
 void m_step(double *X, double *mean, double *cov, double *weights, double *p_val, int K, int N, int D)
 {
-    double *sum_pij = (double *)malloc(K * sizeof(double));
+    double *sum_pij = (double *)calloc(K, sizeof(double));
     calc_sum_pij(p_val, sum_pij, K, N);
 
     // update mean
-    double *mean_num = (double *)malloc(K * D * sizeof(double));
+    double *mean_num = (double *)calloc(K * D, sizeof(double));
     calc_mean_num(X, p_val, mean_num, K, N, D);
     m_step_mean(mean, mean_num, sum_pij, K, D);
     free(mean_num);
@@ -125,11 +126,10 @@ void m_step(double *X, double *mean, double *cov, double *weights, double *p_val
     free(sum_pij);
 }
 
-
 void parallel_sum_pij(double *local_p_val, double *sum_pi, int row_per_process, int K)
 {
     // each process computes sum pi
-    double *local_sum_pi = malloc(K * sizeof(double));
+    double *local_sum_pi = calloc(K, sizeof(double));
     calc_sum_pij(local_p_val, local_sum_pi, K, row_per_process);
 
     // collect sum from all processes and distribute result
@@ -137,16 +137,15 @@ void parallel_sum_pij(double *local_p_val, double *sum_pi, int row_per_process, 
     free(local_sum_pi);
 }
 
-
 void parallel_mean(double *local_examples, double *local_p_val, double *sum_pi,
                    double *mean, int my_rank, int row_per_process, int K, int D)
 {
     // each process calculate mean numerator of its local examples
-    double *local_mean_num = malloc(K * D * sizeof(double));
+    double *local_mean_num = calloc(K * D, sizeof(double));
     calc_mean_num(local_examples, local_p_val, local_mean_num, K, row_per_process, D);
 
     // calculate sum across all processes and send result to process 0
-    double *total_mean_num = malloc(K * D * sizeof(double));
+    double *total_mean_num = calloc(K * D, sizeof(double));
     MPI_Reduce(local_mean_num, total_mean_num, K * D, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     free(local_mean_num);
 
@@ -159,15 +158,14 @@ void parallel_mean(double *local_examples, double *local_p_val, double *sum_pi,
     MPI_Bcast(mean, K * D, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
-
 void parallel_cov(double *local_examples, double *local_p_val, double *mean, double *sum_pi,
                   double *cov, int my_rank, int row_per_process, int K, int D)
 {
-    double *local_cov_num = malloc(K * D * D * sizeof(double));
+    double *local_cov_num = calloc(K * D * D, sizeof(double));
     calc_covariance_num(local_examples, mean, local_cov_num, local_p_val, K, row_per_process, D);
 
     // calculate sum across all processes and send result to process 0
-    double *total_cov_num = malloc(K * D * D * sizeof(double));
+    double *total_cov_num = calloc(K * D * D, sizeof(double));
     MPI_Reduce(local_cov_num, total_cov_num, K * D * D, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     free(local_cov_num);
 
@@ -180,7 +178,6 @@ void parallel_cov(double *local_examples, double *local_p_val, double *mean, dou
     MPI_Bcast(cov, K * D * D, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
-
 void parallel_weights(double *sum_pi, double *weights, int my_rank, int K)
 {
     // process 0 updates weights
@@ -191,12 +188,11 @@ void parallel_weights(double *sum_pi, double *weights, int my_rank, int K)
     MPI_Bcast(weights, K, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
-
 void m_step_parallel(double *local_p_val, double *local_examples, double *mean,
                      double *cov, double *weights, int my_rank, int row_per_process, int K, int D)
 {
     // M STEP
-    double *sum_pi = malloc(K * sizeof(double));
+    double *sum_pi = calloc(K, sizeof(double));
     parallel_sum_pij(local_p_val, sum_pi, row_per_process, K);
 
     // calc mean

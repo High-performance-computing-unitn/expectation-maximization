@@ -38,7 +38,7 @@ double determinant(double *A, int n)
     if (n == 1)
         return A[0];
 
-    double *temp = (double *)malloc(n * n * sizeof(double));
+    double *temp = (double *)calloc(n * n, sizeof(double));
 
     int sign = 1;
 
@@ -67,7 +67,7 @@ void adjoint(double *A, double *adj, int n)
 
     // Temp is used to store cofactors of A[][]
     int sign = 1;
-    double *temp = (double *)malloc(n * n * sizeof(double));
+    double *temp = (double *)calloc(n * n, sizeof(double));
 
     for (int i = 0; i < n; i++)
     {
@@ -93,7 +93,7 @@ void inverse(double *A, double *inv, double *det, int n)
     *det = determinant(A, n);
 
     // Find the adjoint
-    double *adj = (double *)malloc(n * n * sizeof(double));
+    double *adj = (double *)calloc(n * n, sizeof(double));
     adjoint(A, adj, n);
 
     // Find the inverse using the formula "inverse(A) = adj(A)/det(A)"
@@ -136,7 +136,7 @@ double dotProduct(double *a, double *b, int D)
 void standardize(double *data, int N, int D)
 {
     // Calculate the mean for each dimension
-    double *mean = malloc(D * sizeof(double));
+    double *mean = calloc(D, sizeof(double));
     for (int j = 0; j < D; j++)
     {
         mean[j] = 0.0;
@@ -146,7 +146,7 @@ void standardize(double *data, int N, int D)
     }
 
     // Calculate the standard deviation for each dimension
-    double *stdDev = malloc(D * sizeof(double));
+    double *stdDev = calloc(D, sizeof(double));
     for (int j = 0; j < D; j++)
     {
         stdDev[j] = 0.0;

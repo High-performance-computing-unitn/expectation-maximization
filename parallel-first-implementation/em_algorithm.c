@@ -109,15 +109,15 @@ double log_likelihood(double *X, double *mean, double *cov, double *weights, int
 
     for (int i = 0; i < N * D;) // iterate over the training examples
     { 
-        double *row = (double *)malloc(D * sizeof(double));
+        double *row = (double *)calloc(D, sizeof(double));
         for (int col = 0; col < D; col++)
             row[col] = X[i + col];
 
         double s = 0;
         for (int j = 0; j < K; j++)
         {
-            double *c = (double *)malloc(D * D * sizeof(double));
-            double *m = (double *)malloc(D * sizeof(double));
+            double *c = (double *)calloc(D * D, sizeof(double));
+            double *m = (double *)calloc(D, sizeof(double));
             get_cluster_mean_cov(mean, cov, m, c, j, D);
 
             double g = gaussian(row, m, c, D) * weights[j]; // compute pdf
@@ -150,11 +150,11 @@ void em_parallel(int n_iter, double *X, double *mean, double *cov, double *weigh
     int row_per_process = data_count[my_rank] / D;
 
     // allocate memory for local matrix values
-    double *local_examples = malloc(data_count[my_rank] * sizeof(double));
+    double *local_examples = calloc(data_count[my_rank], sizeof(double));
     // divide the matrix and distribute it to all processes
     divide_matrix_and_dist(X, local_examples, mean, cov, weights, data_count, data_displ, my_rank, N, D, K);
 
-    double *local_p_val = malloc(p_count[my_rank] * sizeof(double));
+    double *local_p_val = calloc(p_count[my_rank], sizeof(double));
 
     // calc log likelihood
     int patience = 5; // patience to check the algorithm has really converged
@@ -170,7 +170,7 @@ void em_parallel(int n_iter, double *X, double *mean, double *cov, double *weigh
         log_file = fopen(log_filepath, "a");
         if (log_file == NULL)
         {
-            printf("Error opening the file!");
+            printf("Error opening the log likelihood file!");
             exit(1);
         }
         fprintf(log_file, "%f\n", log_l);

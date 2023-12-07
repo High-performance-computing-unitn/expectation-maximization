@@ -11,17 +11,17 @@
 double gaussian(double *x, double *mean, double *cov, int D)
 {
     // x - mean
-    double *x_u = (double *)malloc(D * sizeof(double));
+    double *x_u = (double *)calloc(D, sizeof(double));
     for (int i = 0; i < D; i++)
         x_u[i] = x[i] - mean[i];
 
     // calculate the inverse of the covariance matrix and the determinant
     double det;
-    double *inv = (double *)malloc(D * D * sizeof(double));
+    double *inv = (double *)calloc(D * D, sizeof(double));
     inverse(cov, inv, &det, D);
 
     // multiply (x-mean) and inverse of covariance
-    double *x_u_inv = (double *)malloc(D * sizeof(double));
+    double *x_u_inv = (double *)calloc(D, sizeof(double));
     matmul(inv, x_u, x_u_inv, D);
     free(inv);
 
@@ -74,17 +74,17 @@ void e_step(double *X, double *mean, double *cov, double *weights, double *p_val
 
     for (int i = 0; i < N * D;) // iterate over the training examples
     {
-        double *row = (double *)malloc(D * sizeof(double));
+        double *row = (double *)calloc(D, sizeof(double));
         for (int col = 0; col < D; col++)
             row[col] = X[i + col];
 
-        double p_x = 0.;                                        // the sum of pdf of all clusters
-        double *gaussians = (double *)malloc(K * sizeof(double)); // store the result of gaussian pdf to avoid computing it twice
+        double p_x = 0.;                                         // the sum of pdf of all clusters
+        double *gaussians = (double *)calloc(K, sizeof(double)); // store the result of gaussian pdf to avoid computing it twice
 
         for (int j = 0; j < K; j++) // iterate over clusters
         {
-            double *c = (double *)malloc(D * D * sizeof(double));
-            double *m = (double *)malloc(D * sizeof(double));
+            double *c = (double *)calloc(D * D, sizeof(double));
+            double *m = (double *)calloc(D, sizeof(double));
             get_cluster_mean_cov(mean, cov, m, c, j, D);
 
             double g = gaussian(row, m, c, D) * weights[j]; // calculate pdf
@@ -108,7 +108,7 @@ void e_step(double *X, double *mean, double *cov, double *weights, double *p_val
             p_x = 1e-52;
 
         for (int j = 0; j < K; j++) // calculate probability for each cluster assignment
-        { 
+        {
             double pij = gaussians[j] / p_x;
             p_val[p_val_ind + j] = pij;
         }
