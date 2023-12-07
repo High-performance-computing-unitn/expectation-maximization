@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "const.h"
+#include "constants.h"
 
 /*
     Strdup implementation
@@ -38,7 +38,7 @@ void readFile(char *rows[MAX_ROW_LEN], char *FILE_PATH)
     }
     else
     {
-        printf("The file does not exist!");
+        printf("Error opening the input file!");
         exit(1);
     }
 }
@@ -59,7 +59,7 @@ void fill_matrix(double *mat, int N, int D, char *FILE_PATH)
         {
             if (ptr != delim)
             {
-                mat[row * D + col] = strtof(ptr, NULL); // convert element to double and store it in the matrix
+                mat[row * D + col] = strtod(ptr, NULL); // convert element to double and store it in the matrix
                 ptr = strtok(NULL, delim);
                 col++;
             }

@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "utils.h"
-#include "const.h"
+#include "constants.h"
 
 /*
     Function that returns the gaussian probability density estimate.

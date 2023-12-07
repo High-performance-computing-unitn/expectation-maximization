@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "utils.h"
-#include "const.h"
+#include "constants.h"
 #include "file_reader.h"
 #include "em_algorithm.h"
 
@@ -18,20 +18,17 @@ int main(int argc, char *argv[])
     int D = atoi(argv[2]);
     int K = atoi(argv[3]);
     int max_iter = atoi(argv[4]);
-    // char *FILE_PATH = argv[5];
-    char *FILE_PATH = "../data-generator/N800_K4_D3.csv";
-
-    printf("%d", N);
+    char *FILE_PATH = argv[5];
 
     // create the filepath for the log likelihood storing and print the first line
-    snprintf(log_filepath, sizeof(log_filepath), "log-likelihood-results/N%s_K%s_D%s.txt", argv[1], argv[3], argv[2]);
-    FILE *log_file = fopen(log_filepath, "w");
+    snprintf(log_filepath, sizeof(log_filepath), "expectation-maximization/serial-version/log-likelihood-results/N%s_K%s_D%s.txt", argv[1], argv[3], argv[2]);
+    FILE *log_file = fopen(log_filepath, "a");
     if (log_file == NULL)
     {
-        printf("Error opening the file!");
+        printf("Error opening the log likelihood file!");
         exit(1);
     }
-    fprintf(log_file, "Execution for N: %d, K: %d, D: %d\n", N, K, D);
+    fprintf(log_file, "\n\n--------------\nExecution for N: %d, K: %d, D: %d\n", N, K, D);
     fclose(log_file);
 
     double *examples = calloc(N * D, sizeof(double));
@@ -40,7 +37,6 @@ int main(int argc, char *argv[])
     clock_t end = clock(); // get ending time for file reading
     printf("Time to read file: %f seconds with: %d samples\n", (double)(end - start) / CLOCKS_PER_SEC, N);
 
-    start = clock();             // get starting time for EM algorithm
     standardize(examples, N, D); // standardize the examples
 
     double *weights = calloc(K, sizeof(double));
@@ -50,12 +46,15 @@ int main(int argc, char *argv[])
 
     initialize(mean, covariance, weights, K, D); // initialize mean, covariance and weights
 
+    start = clock(); // get starting time for EM algorithm
+
     em_train(max_iter, examples, mean, covariance, weights, p_val, K, N, D); // start the algorithm
 
     end = clock(); // get the ending time of the EM algorithm
-    printf("Completed in: %f seconds with: %d samples\n", (double)(end - start) / CLOCKS_PER_SEC, N);
+    printf("Algorithm completed in: %f seconds with: %d samples\n", (double)(end - start) / CLOCKS_PER_SEC, N);
 
     // uncomment to print results of the algorithm
+    printf("P values produced by the algorithm\n");
     for (int i = 0; i < N; i++)
     {
         for (int j = 0; j < K; j++)

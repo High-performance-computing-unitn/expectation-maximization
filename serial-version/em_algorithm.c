@@ -4,7 +4,7 @@
 #include "m_step.h"
 #include "e_step.h"
 #include "utils.h"
-#include "const.h"
+#include "constants.h"
 
 /*
     Function that computes the log likelihood to check if the algorithm is converging
@@ -55,7 +55,7 @@ void em_train(int n_iter, double *X, double *mean, double *cov, double *weights,
     FILE *log_file = fopen(log_filepath, "a");
     if (log_file == NULL)
     {
-        printf("Error opening the file!");
+        printf("Error opening the log likelihood file!");
         exit(1);
     }
     fprintf(log_file, "%f\n", log_l);
