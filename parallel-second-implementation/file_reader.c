@@ -62,7 +62,7 @@ void read_file(char **rows, int process_samples, int process_rank, char *FILE_PA
     }
     else
     {
-        printf("Cannot open file!");
+        printf("Error opening the input file!");
         exit(1);
     }
 }
@@ -82,16 +82,17 @@ void fill_matrix(Sample *dataset, char **rows, int process_samples, int process_
     {        
         char *ptr = strtok(rows[row], delim);              // pointer to the first element
         Sample s;                                          // current sample
-        s.dimensions = (float *)malloc(D * sizeof(float)); // allocate dimensions array of sample
+        s.dimensions = (double *)calloc(D, sizeof(double)); // allocate dimensions array of sample
         while (ptr != NULL)
         {
             if (ptr != delim)
             {
-                s.dimensions[col] = strtof(ptr, NULL); // convert element to float and store it in the sample
+                s.dimensions[col] = strtod(ptr, NULL); // convert element to float and store it in the sample
                 ptr = strtok(NULL, delim);             // shift the pointer
                 col++;
             }
         }
+        col = 0;
         dataset[row] = s; // store the sample
     }
 }

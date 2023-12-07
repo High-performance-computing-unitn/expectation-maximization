@@ -11,22 +11,22 @@
  * https://matematicamente.it/forum/viewtopic.php?f=15&t=145130
  */
 
-float abs(float f)
+double d_abs(double d)
 {
-    return (f < 0.) ? -f : f;
+    return (d < 0.) ? -d : d;
 }
 
-float factorize(float *matrix, int n)
+double factorize(double *matrix, int n)
 {
-    float parity = 1.;
+    double parity = 1.;
 
     for (int k = 0; k < n - 1; k++)
     {
-        float max = abs(matrix[k * n + k]);
+        double max = d_abs(matrix[k * n + k]);
         int index = k;
         for (int i = k + 1; i < n; i++)
         {
-            float t = abs(matrix[i * n + k]);
+            double t = d_abs(matrix[i * n + k]);
             if (t > max)
             {
                 max = t;
@@ -43,13 +43,13 @@ float factorize(float *matrix, int n)
             #pragma omp parallel for
             for (int i = 0; i < n; i++)
             {
-                float t = matrix[k * n + i];
+                double t = matrix[k * n + i];
                 matrix[k * n + i] = matrix[index * n + i];
                 matrix[index * n + i] = t;
             }
         }
 
-        float pe = matrix[k * n + k];
+        double pe = matrix[k * n + k];
         #pragma omp parallel for
         for (int i = k + 1; i < n; i++)
             matrix[i * n + k] /= pe;
@@ -57,7 +57,7 @@ float factorize(float *matrix, int n)
         #pragma omp parallel for
         for (int i = k + 1; i < n; i++)
         {
-            float matrix_i_k = matrix[i * n + k];
+            double matrix_i_k = matrix[i * n + k];
             for (int j = k + 1; j < n; j++)
                 matrix[i * n + j] -= matrix_i_k * matrix[k * n + j];
         }
@@ -66,13 +66,13 @@ float factorize(float *matrix, int n)
     return parity;
 }
 
-float determinant(float *m, int n, int starting_index)
+double determinant(double *m, int n, int starting_index)
 {
     // if matrix is grater than 3x3 compute as follows
     if (n > 3)
     {
         int n2 = n * n;
-        float *matrix = (float *)malloc(n2 * sizeof(float));
+        double *matrix = (double *)calloc(n2, sizeof(double));
         if (matrix)
         {
             // copy the input matrix with threads to avoid changing its values
@@ -80,7 +80,7 @@ float determinant(float *m, int n, int starting_index)
             for (int i = 0; i < n2; i++)
                 matrix[i] = m[starting_index + i];
 
-            float det = factorize(matrix, n); // factorize matrix
+            double det = factorize(matrix, n); // factorize matrix
 
             if (det != 0)
             {
@@ -89,13 +89,11 @@ float determinant(float *m, int n, int starting_index)
                 for (int i = 0; i < n; i++)
                 {
                     int ind = i * n + i;
-                    float value = matrix[ind];
+                    double value = matrix[ind];
                     det *= value;
                 }
             }
-
-            if (matrix)
-                free(matrix);
+            free(matrix);
             return det;
         }
         else
@@ -119,7 +117,7 @@ float determinant(float *m, int n, int starting_index)
         return 0.;
 }
 
-void getCofactor(float *cov, float *temp, int p, int q, int n, int starting_index)
+void getCofactor(double *cov, double *temp, int p, int q, int n, int starting_index)
 {
     int i = 0, j = 0;
 
@@ -144,7 +142,7 @@ void getCofactor(float *cov, float *temp, int p, int q, int n, int starting_inde
     }
 }
 
-void adjoint(float *cov, float *adj, int n, int starting_index)
+void adjoint(double *cov, double *adj, int n, int starting_index)
 {
     if (n == 1)
     {
@@ -154,7 +152,7 @@ void adjoint(float *cov, float *adj, int n, int starting_index)
 
     // Temp is used to store cofactors of A[][]
     int sign = 1;
-    float *temp = (float *)malloc(n * n * sizeof(float));
+    double *temp = (double *)calloc(n * n, sizeof(double));
 
     for (int i = 0; i < n; i++)
     {
@@ -177,13 +175,13 @@ void adjoint(float *cov, float *adj, int n, int starting_index)
 /*
     Function that computes the inverse of the imput matrix and calculate its determinant
 */
-void inverse(float *cov, float *inv, float *det, int n, int starting_index)
+void inverse(double *cov, double *inv, double *det, int n, int starting_index)
 {
     // Find the determinant of A[][]
     *det = determinant(cov, n, starting_index);
 
     // Find the adjoint
-    float *adj = (float *)malloc(n * n * sizeof(float));
+    double *adj = (double *)calloc(n * n, sizeof(double));
     adjoint(cov, adj, n, starting_index);
 
     // Find the inverse using the formula "inverse(A) = adj(A)/det(A)"
@@ -197,22 +195,22 @@ void inverse(float *cov, float *inv, float *det, int n, int starting_index)
 /*
     Function that performs matrix vector multiplication and stores the result in the res vector passed as an argument.
 */
-void matmul(float *mat, float *vec, float *res)
+void matmul(double *mat, double *vec, double *res)
 {
     for (int i = 0; i < D; i++)
     {
         res[i] = 0;
         for (int j = 0; j < D; j++)
-            res[i] += mat[i * D + j] * (float)vec[j];
+            res[i] += mat[i * D + j] * (double)vec[j];
     }
 }
 
 /*
     Function that calculates the dot product between two vectors and returns the results.
 */
-float dotProduct(float *a, float *b)
+double dotProduct(double *a, double *b)
 {
-    float result = 0.0;
+    double result = 0.0;
     for (int i = 0; i < D; i++)
         result += a[i] * b[i];
     return result;
@@ -224,7 +222,7 @@ float dotProduct(float *a, float *b)
 void standardize(Sample *data, int sample_size)
 {
     // Calculate the mean for each dimension
-    float *mean = (float *)malloc(D * sizeof(float));
+    double *mean = (double *)calloc(D, sizeof(double));
     for (int j = 0; j < D; j++)
     {
         mean[j] = 0.0;
@@ -234,7 +232,7 @@ void standardize(Sample *data, int sample_size)
     }
 
     // Calculate the standard deviation for each dimension
-    float *stdDev = (float *)malloc(D * sizeof(float));
+    double *stdDev = (double *)calloc(D, sizeof(double));
     for (int j = 0; j < D; j++)
     {
         stdDev[j] = 0.0;
@@ -248,8 +246,6 @@ void standardize(Sample *data, int sample_size)
         for (int j = 0; j < D; j++)
             data[i].dimensions[j] = (data[i].dimensions[j] - mean[j]) / stdDev[j];
 
-    if (mean)
-        free(mean);
-    if (stdDev)
-        free(stdDev);
+    free(mean);
+    free(stdDev);
 }

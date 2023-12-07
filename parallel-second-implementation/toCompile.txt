@@ -1,1 +1,0 @@
-mpicc -g -Wall -std=c99 -o parallelRun main.c linear_op.c file_reader.c em_algorithm.c e_step.c m_step.c -lm -fopenmp

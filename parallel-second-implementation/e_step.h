@@ -4,9 +4,9 @@
 #include "constants.h"
 
 // computes pdf
-float gaussian(Sample x, float *mean, float *cov, int j);
+double gaussian(Sample x, double *mean, double *cov, int j);
 
 // run expectation step
-void e_step(Sample *samples, float *mean, float *cov, float *weights, float *p_val, int row_per_process);
+void e_step(Sample *samples, double *mean, double *cov, double *weights, double *p_val, int row_per_process);
 
 #endif 

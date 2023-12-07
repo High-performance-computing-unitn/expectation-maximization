@@ -14,7 +14,7 @@ extern int last_process; // process with higher ID
 extern char log_filepath[1024]; // log likelihood file path
 
 typedef struct Sample{ // struct for each element of the input file, each element has an array of its dimensions
-    float *dimensions;
+    double *dimensions;
 }Sample;
 
 #endif 

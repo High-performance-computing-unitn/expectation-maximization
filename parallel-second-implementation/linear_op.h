@@ -4,16 +4,16 @@
 #include "constants.h"
 
 // calculate the determinant
-float determinant(float *m, int n, int starting_index);
+double determinant(double *m, int n, int starting_index);
 
 // calculate the inverse of matrix
-void inverse(float *cov, float *inv, float *det, int n, int starting_index);
+void inverse(double *cov, double *inv, double *det, int n, int starting_index);
 
 // calculate matrix-vector multiplication
-void matmul(float *mat, float *vec, float *res);
+void matmul(double *mat, double *vec, double *res);
 
 // calculate the dot product
-float dotProduct(float *a, float *b);
+double dotProduct(double *a, double *b);
 
 // standardize the training data
 void standardize(Sample *samples, int sample_size);

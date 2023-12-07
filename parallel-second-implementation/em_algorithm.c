@@ -10,16 +10,16 @@
 /*
     Function that calculates the log likelihood to check algorithm convergence
 */
-float log_likelihood(Sample *samples, float *mean, float *cov, float *weights, int process_samples)
+double log_likelihood(Sample *samples, double *mean, double *cov, double *weights, int process_samples)
 {
-    float log_l = 0;
+    double log_l = 0;
 
     for (int i = 0; i < process_samples; i++) // iterate over the training examples
     {
-        float s = 0;
+        double s = 0;
         for (int j = 0; j < K; j++)
         {
-            float g = gaussian(samples[i], mean, cov, j) * weights[j]; // compute pdf
+            double g = gaussian(samples[i], mean, cov, j) * weights[j]; // compute pdf
             if (!(g == g)) // g is Nan - matrix is singular
                 continue;
             s += g;
@@ -32,16 +32,16 @@ float log_likelihood(Sample *samples, float *mean, float *cov, float *weights, i
 /*
    The function that iteratively run expectation and maximization steps for n iteration or until convergence.
 */
-void em_train(Sample *samples, float *mean, float *cov, float *weights, float *p_val, int process_samples, int process_rank)
+void em_train(Sample *samples, double *mean, double *cov, double *weights, double *p_val, int process_samples, int process_rank)
 {
-    float *local_p_val = (float *)malloc(process_samples * K * sizeof(float));
+    double *local_p_val = (double *)calloc(process_samples * K, sizeof(double));
 
     // calc log likelihood
     int patience = 5; // patience to check that algorithm has really converged
-    float local_log_l = log_likelihood(samples, mean, cov, weights, process_samples); // calculate log likelihood
-    float log_l = 0;
+    double local_log_l = log_likelihood(samples, mean, cov, weights, process_samples); // calculate log likelihood
+    double log_l = 0;
     // compute sum of all processes log likelihood to check
-    MPI_Allreduce(&local_log_l, &log_l, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&local_log_l, &log_l, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
     // master process opens file and stores the result
     FILE *log_file;
@@ -50,7 +50,7 @@ void em_train(Sample *samples, float *mean, float *cov, float *weights, float *p
         log_file = fopen(log_filepath, "a");
         if (log_file == NULL)
         {
-            printf("Error opening the file!");
+            printf("Error opening the log likelihood file!");
             exit(1);
         }
         fprintf(log_file, "%f\n", log_l);
@@ -64,10 +64,10 @@ void em_train(Sample *samples, float *mean, float *cov, float *weights, float *p
         m_step_parallel(local_p_val, samples, mean, cov, weights, process_rank, process_samples);
 
         // calc log likelihood
-        float local_log_l = log_likelihood(samples, mean, cov, weights, process_samples);
-        float log_l_next = 0;
+        double local_log_l = log_likelihood(samples, mean, cov, weights, process_samples);
+        double log_l_next = 0;
         // compute sum of all processes log likelihood to check
-        MPI_Allreduce(&local_log_l, &log_l_next, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&local_log_l, &log_l_next, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
         // master process stores the result
         if (process_rank == MASTER_PROCESS)
@@ -88,16 +88,15 @@ void em_train(Sample *samples, float *mean, float *cov, float *weights, float *p
         fclose(log_file);
 
     // gather p values of all processes
-    MPI_Gather(local_p_val, process_samples * K, MPI_FLOAT, p_val, process_samples * K, MPI_FLOAT, MASTER_PROCESS, MPI_COMM_WORLD);
+    MPI_Gather(local_p_val, process_samples * K, MPI_DOUBLE, p_val, process_samples * K, MPI_DOUBLE, MASTER_PROCESS, MPI_COMM_WORLD);
 
-    if (local_p_val)
-        free(local_p_val);
+    free(local_p_val);
 }
 
 /*
     The function that initializes the initial values of mean in the range (0, 1).
 */
-void init_mean(float *mean)
+void init_mean(double *mean)
 {
     for (int k = 0; k < K; k++)
         for (int d = 0; d < D; d++)
@@ -109,7 +108,7 @@ void init_mean(float *mean)
     In order to make the matrix non-singular, it assigns the values
     in range (0, 1) in the main diagonal, and 1e-6 everywhere else.
 */
-void init_cov(float *cov)
+void init_cov(double *cov)
 {
     for (int k = 0; k < K; k++)
         for (int r = 0; r < D; r++)
@@ -124,7 +123,7 @@ void init_cov(float *cov)
     The function that initializes the initial values of the weights.
     All clusters will have equal weight initially equal to 1 / K, where K - number of clusters.
 */
-void init_weights(float *weights)
+void init_weights(double *weights)
 {
     for (int k = 0; k < K; k++)
         weights[k] = 1.f / K;
@@ -133,7 +132,7 @@ void init_weights(float *weights)
 /*
     Function that initializes mean, covariance and weights.
 */
-void initialize(float *mean, float *cov, float *weights)
+void initialize(double *mean, double *cov, double *weights)
 {
     init_mean(mean);
     init_cov(cov);
