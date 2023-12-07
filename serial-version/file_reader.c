@@ -18,17 +18,17 @@ char *strdup(const char *str)
 /*
     Function that reads from the input file and store each row in the rows array.
 */
-void readFile(char *rows[MAX_ROW_LEN], char *FILE_PATH)
+void readFile(char *rows[MAX_LINES], char *FILE_PATH)
 {
     FILE *file = fopen(FILE_PATH, "r");
 
     if (file != NULL)
     {
         int rowN = 0;
-        char line[1024];
+        char line[MAX_ROW_LEN];
 
         // get all the lines of the dataset
-        while (fgets(line, 1024, file))
+        while (fgets(line, MAX_ROW_LEN, file))
         {
             rows[rowN] = strdup(line);
             rowN++;
@@ -48,7 +48,7 @@ void readFile(char *rows[MAX_ROW_LEN], char *FILE_PATH)
 */
 void fill_matrix(double *mat, int N, int D, char *FILE_PATH)
 {
-    char *rows[MAX_ROW_LEN];
+    char *rows[MAX_LINES];
     readFile(rows, FILE_PATH);
     int col = 0;
     char delim[] = ","; // delimiter of columns
