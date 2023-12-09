@@ -7,4 +7,4 @@
 #PBS -q short_cpuQ
 
 # arguments are                                     N       D K iter filepath
-./expectation-maximization/serial-version/serialRun 1250000 3 5 200 "expectation-maximization/data-generator/N1250000_K5_D3.csv"
+./expectation-maximization/serial-version/serialRun 1250000 4 5 200 "expectation-maximization/data-generator/N1250000_K5_D4.csv"
