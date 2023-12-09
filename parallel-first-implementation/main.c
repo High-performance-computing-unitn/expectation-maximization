@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
             printf("Error opening the log likelihood file!");
             exit(1);
         }
-        fprintf(log_file, "\n\n--------------\nExecution for N: %d, K: %d, D: %d\nWith %d processes\n", N, K, D, comm_sz);
+        fprintf(log_file, "\n\n--------------\nExecution for N: %d, K: %d, D: %d\nWith %d processes\n\n", N, K, D, comm_sz);
         fclose(log_file);
     }
 
