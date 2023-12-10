@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <omp.h>
 #include <mpi.h>
 
@@ -37,7 +38,7 @@ double factorize(double *matrix, int n)
         if (index != k)
         {
             parity *= -1;
-            #pragma omp parallel for
+#pragma omp parallel for num_threads(2)
             for (int i = 0; i < n; i++)
             {
                 double t = matrix[k * n + i];
@@ -47,11 +48,11 @@ double factorize(double *matrix, int n)
         }
 
         double pe = matrix[k * n + k];
-        #pragma omp parallel for
+#pragma omp parallel for num_threads(2)
         for (int i = k + 1; i < n; i++)
             matrix[i * n + k] /= pe;
 
-        #pragma omp parallel for
+#pragma omp parallel for num_threads(2)
         for (int i = k + 1; i < n; i++)
         {
             double matrix_i_k = matrix[i * n + k];
@@ -72,8 +73,8 @@ double determinant(double *m, int n)
         double *matrix = (double *)calloc(n2, sizeof(double));
         if (matrix)
         {
-            // copy the input matrix with threads to avoid changing its values
-            #pragma omp parallel for
+// copy the input matrix with threads to avoid changing its values
+#pragma omp parallel for num_threads(2)
             for (int i = 0; i < n2; i++)
                 matrix[i] = m[i];
 
@@ -81,8 +82,8 @@ double determinant(double *m, int n)
 
             if (det != 0)
             {
-                // if the determinant is not zero each thread compute its det and then multiply the result of each thread
-                #pragma omp parallel for reduction(* : det)
+// if the determinant is not zero each thread compute its det and then multiply the result of each thread
+#pragma omp parallel for reduction(* : det) num_threads(2)
                 for (int i = 0; i < n; i++)
                 {
                     int ind = i * n + i;
@@ -98,9 +99,7 @@ double determinant(double *m, int n)
     }
     else if (n == 3) // if matrix is less then or equal to 3x3 in size compute determinant by hand
     {
-        return (m[0] * (m[4] * m[8] - m[5] * m[7])
-                - m[1] * (m[3] * m[8] - m[5] * m[6])
-                + m[2] * (m[3] * m[7] - m[4] * m[6]));
+        return (m[0] * (m[4] * m[8] - m[5] * m[7]) - m[1] * (m[3] * m[8] - m[5] * m[6]) + m[2] * (m[3] * m[7] - m[4] * m[6]));
     }
     else if (n == 2)
     {
@@ -139,78 +138,89 @@ void getCofactor(double *A, double *temp, int p, int q, int n)
     }
 }
 
-// double determinant(double *A, int n)
-// {
-//     double det = 0;
-
-//     // Base case: if the matrix contains a single element
-//     if (n == 1)
-//         return A[0];
-
-//     double *temp = (double *)calloc(n * n, sizeof(double));
-
-//     int sign = 1;
-
-//     for (int f = 0; f < n; f++)
-//     {
-//         // Getting the cofactor of A[0][f]
-//         getCofactor(A, temp, 0, f, n);
-//         det += sign * A[f] * determinant(temp, n - 1);
-
-//         // Terms are to be added with alternate sign
-//         sign = -sign;
-//     }
-
-//     free(temp);
-
-//     return det;
-// }
-
-void adjoint(double *A, double *adj, int n)
+void generate_identity(double *inverse, int size)
 {
-    if (n == 1)
+    for (int i = 0; i < size; i++)
     {
-        adj[0] = 1;
-        return;
-    }
-
-    // Temp is used to store cofactors of A[][]
-    int sign = 1;
-    double *temp = (double *)calloc(n * n, sizeof(double));
-
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
+        for (int j = 0; j < size; j++)
         {
-            // Get the cofactor of A[i][j]
-            getCofactor(A, temp, i, j, n);
+            if (i == j)
+                inverse[i *size + j] = 1;
+            else
+                inverse[i *size + j] = 0;
+        }
+    }
+}
 
-            // Sign of adj[j][i] is positive if the sum of row and column indexes is even.
-            sign = ((i + j) % 2 == 0) ? 1 : -1;
+void inverse(double *mat, double *inv, int size)
+{
+    double *input_matrix = calloc(size * size, sizeof(double));
 
-            // Interchange rows and columns to get the transpose of the cofactor matrix
-            adj[j * n + i] = (sign) * (determinant(temp, n - 1));
+    for (int i = 0; i < size; i++)
+        for (int j = 0; j < size; j++)
+            input_matrix[i * size + j] = mat[i * size + j];
+    
+    generate_identity(inv, size);
+
+    for (int i = 0; i < size; i++)
+    {
+        if (input_matrix[i * size + i] == 0)
+        {
+            // swap nearest subsequent row s.t input_matrix[i][i] != 0 after swapping
+            for (int j = i + 1; j < size; j++)
+            {
+                if (input_matrix[j * size + i] != 0.0)
+                {
+                    for (int z = 0; z < size; z++)
+                    {
+                        double tmp = input_matrix[i * size + z];
+                        input_matrix[i * size + z] = input_matrix[j * size + z];
+                        input_matrix[j * size + z] = tmp;
+                    }
+
+                    break;
+                }
+                if (j == size - 1)
+                {
+                    printf("Inverse does not exist for this matrix");
+                    exit(1);
+                }
+            }
+        }
+        double scale = input_matrix[i * size + i];
+        for (int col = 0; col < size; col++)
+        {
+            input_matrix[i * size + col] = input_matrix[i *size + col] / scale;
+            inv[i * size + col] = inv[i * size + col] / scale;
+        }
+        if (i < size - 1)
+        {
+            for (int row = i + 1; row < size; row++)
+            {
+                double factor = input_matrix[row * size + i];
+                for (int col = 0; col < size; col++)
+                {
+                    input_matrix[row * size + col] -= factor * input_matrix[i * size + col];
+                    inv[row * size + col] -= factor * inv[i * size + col];
+                }
+            }
         }
     }
 
-    free(temp);
-}
+    for (int zeroing_col = size - 1; zeroing_col >= 1; zeroing_col--)
+    {
+        for (int row = zeroing_col - 1; row >= 0; row--)
+        {
+            double factor = input_matrix[row * size + zeroing_col];
+            for (int col = 0; col < size; col++)
+            {
+                input_matrix[row * size + col] -= factor * input_matrix[zeroing_col * size + col];
+                inv[row * size + col] -= factor * inv[zeroing_col * size + col];
+            }
+        }
+    }
 
-void inverse(double *A, double *inv, double *det, int n)
-{
-    // Find the determinant of A[][]
-    *det = determinant(A, n);
-
-    // Find the adjoint
-    double *adj = (double *)calloc(n * n, sizeof(double));
-    adjoint(A, adj, n);
-
-    // Find the inverse using the formula "inverse(A) = adj(A)/det(A)"
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-            inv[i * n + j] = adj[j * n + i] / *det;
-
-    free(adj);
+    free(input_matrix);
 }
 
 /*
@@ -271,7 +281,7 @@ void standardize(double *data, int row_per_process, int world_size, int D)
         local_stdDev[j] = sqrt(local_stdDev[j] / (row_per_process - 1));
     }
 
-    double * global_stdDev = calloc(D, sizeof(double));
+    double *global_stdDev = calloc(D, sizeof(double));
 
     MPI_Allreduce(local_stdDev, global_stdDev, D, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 

@@ -16,9 +16,9 @@ double gaussian(double *x, double *mean, double *cov, int D)
         x_u[i] = x[i] - mean[i];
 
     // calculate the inverse of the covariance matrix and the determinant
-    double det;
+    double det = determinant(cov, D);
     double *inv = (double *)calloc(D * D, sizeof(double));
-    inverse(cov, inv, &det, D);
+    inverse(cov, inv, D);
 
     // multiply (x-mean) and inverse of covariance
     double *x_u_inv = (double *)calloc(D, sizeof(double));

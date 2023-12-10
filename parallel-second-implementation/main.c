@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
     // create the log likelihood file path and write first line
     if (my_rank == 0)
-    {
+    {   
         snprintf(log_filepath, sizeof(log_filepath), "expectation-maximization/parallel-second-implementation/log-likelihood-results/N%s_K%s_D%s.txt", argv[1], argv[3], argv[2]);
         FILE *log_file = fopen(log_filepath, "a");
         if (log_file == NULL)
@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
     }
 
     free_em_data(examples, mean, covariance, weights, p_val);
-    //free_rows_data(data_count, data_displ, p_count, p_displ);
 
     MPI_Finalize();
     return 0;
