@@ -45,6 +45,6 @@ PARALLEL SECOND
 		2 cores:  readFile: 2,11s ||  algo: 1825s (30 min 25 sec)
 		4 cores:  readFile: 0,99s ||  algo: 1064s (17 min 44 sec)
 		8 cores:  readFile: 0,22s ||  algo: 233s (3 min 53 sec)
-		16 cores: readFile: 0,00s ||  algo:
-		32 cores: readFile: 0,00s ||  algo:
-		64 cores: readFile: 0,00s ||  algo: 
+		16 cores: readFile: 0,82s ||  algo: 202s (3 min 22 sec)
+		32 cores: readFile: 0,7s  ||  algo: 170s (2 min 50 sec)
+		64 cores: readFile: 1s    ||  algo: 72s (1 min 12 sec)
