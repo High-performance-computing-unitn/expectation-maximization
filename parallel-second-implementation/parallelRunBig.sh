@@ -24,7 +24,7 @@ echo "---end---"
 
 echo "execution with 8 cores"
 
-# arguments are                     executable                                   N       D K iter filepath
+# arguments are                      executable                                  N       D K iter filepath
 mpiexec -n 8 expectation-maximization/parallel-second-implementation/parallelRun 1250000 4 5 200 "expectation-maximization/data-generator/N1250000_K5_D4.csv"
 
 echo "---end---"
