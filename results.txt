@@ -1,51 +1,63 @@
 SERIAL 
-	smallDS:  readFile: 0,3s  ||  algo: 334,3s (5 min 34 sec)
-	mediumDS: readFile: 0,7s  ||  algo: 738,5s (12 min 18 sec)
-	bigDS:    readFile: 1,4s  ||  algo: 1456,6s (24 min 17 sec)
+	smallDS:  readFile: 0,3s  ||  algo: 334s (5 min 34 sec)
+	mediumDS: readFile: 0,7s  ||  algo: 739s (12 min 18 sec)
+	bigDS:    readFile: 1,4s  ||  algo: 1457s (24 min 17 sec)
 
 PARALLEL FIRST	
 	smallDS
-		2 cores:  readFile: 0,4s  ||  algo: 80s (1 min 20 sec)
-		4 cores:  readFile: 0,2s  ||  algo: 65s (1 min 5 sec)
-		8 cores:  readFile: 0,2s  ||  algo: 27s
-		16 cores: readFile: 0,2s  ||  algo: 12s
-		32 cores: readFile: 0,3s  ||  algo: 7s
-		64 cores: readFile: 0,3s  ||  algo: 5s
+		1 cores:   readFile: 0,4s  ||  algo: 234s (3 min 54 sec)
+		2 cores:   readFile: 0,4s  ||  algo: 80s (1 min 20 sec)
+		4 cores:   readFile: 0,2s  ||  algo: 65s (1 min 5 sec)
+		8 cores:   readFile: 0,2s  ||  algo: 27s
+		16 cores:  readFile: 0,2s  ||  algo: 12s
+		32 cores:  readFile: 0,3s  ||  algo: 7s
+		64 cores:  readFile: 0,3s  ||  algo: 5s
+		128 cores: readFile: XXXXXXs  ||  algo: XXXXXXs
 	mediumDS
-		2 cores:  readFile: 0,9s  ||  algo: 238s (4 min)
-		4 cores:  readFile: 0,5s  ||  algo: 120s (2 min)
-		8 cores:  readFile: 0,6s  ||  algo: 65s (1 min 5 sec)
-		16 cores: readFile: 0,5s  ||  algo: 32s
-		32 cores: readFile: 0,6s  ||  algo: 24s
-		64 cores: readFile: 0,6s  ||  algo: 18s
+		1 cores:   readFile: 0,7s  ||  algo: 546s (9 min 6 sec)
+		2 cores:   readFile: 0,9s  ||  algo: 238s (4 min)
+		4 cores:   readFile: 0,5s  ||  algo: 120s (2 min)
+		8 cores:   readFile: 0,6s  ||  algo: 65s (1 min 5 sec)
+		16 cores:  readFile: 0,5s  ||  algo: 32s
+		32 cores:  readFile: 0,6s  ||  algo: 24s
+		64 cores:  readFile: 0,6s  ||  algo: 18s
+		128 cores: readFile: XXXXXXs  ||  algo: XXXXXXs
 	bigDS
-		2 cores:  readFile: 1,6s  ||  algo: 513s (8 min 33 sec)
-		4 cores:  readFile: 1,5s  ||  algo: 257s (4 min 17 sec)
-		8 cores:  readFile: 1,2s  ||  algo: 161s (2 min 41 sec)
-		16 cores: readFile: 1,5s  ||  algo: 79s (1 min 19 sec)
-		32 cores: readFile: 1,7s  ||  algo: 42s
-		64 cores: readFile: 1,4s  ||  algo: 25s
+		1 cores:   readFile: 1,1s  ||  algo: 1291s (21 min 31 sec)
+		2 cores:   readFile: 1,6s  ||  algo: 513s (8 min 33 sec)
+		4 cores:   readFile: 1,5s  ||  algo: 257s (4 min 17 sec)
+		8 cores:   readFile: 1,2s  ||  algo: 161s (2 min 41 sec)
+		16 cores:  readFile: 1,5s  ||  algo: 79s (1 min 19 sec)
+		32 cores:  readFile: 1,7s  ||  algo: 42s
+		64 cores:  readFile: 1,4s  ||  algo: 25s
+		128 cores: readFile: XXXXXXs  ||  algo: XXXXXXs
 
 PARALLEL SECOND
 	smallDS
-		2 cores:  readFile: 0,3s  ||  algo: 229s (3 min 49 sec)
-		4 cores:  readFile: 0,07s ||  algo: 149s (2 min 29 sec)
-		8 cores:  readFile: 0,04s ||  algo: 85s (1 min 25 sec)
-		16 cores: readFile: 0,05s ||  algo: 48s
-		32 cores: readFile: 0,07s ||  algo: 29s
-		64 cores: readFile: 0,14s ||  algo: 44s
+		1 cores:   readFile: 0,4s  ||  algo: 678s (11 min 18 sec)
+		2 cores:   readFile: 0,3s  ||  algo: 229s (3 min 49 sec)
+		4 cores:   readFile: 0,07s ||  algo: 149s (2 min 29 sec)
+		8 cores:   readFile: 0,04s ||  algo: 85s (1 min 25 sec)
+		16 cores:  readFile: 0,05s ||  algo: 48s
+		32 cores:  readFile: 0,07s ||  algo: 29s
+		64 cores:  readFile: 0,1s  ||  algo: 44s
+		128 cores: readFile: XXXXXXs  ||  algo: XXXXXXs
 	mediumDS
-		2 cores:  readFile: 0,64s ||  algo: 625s (10 min 25 sec)
-		4 cores:  readFile: 0,17s ||  algo: 358s (5 min 58 sec)
-		8 cores:  readFile: 0,12s ||  algo: 165s (2 min 45 sec)
-		16 cores: readFile: 0,15s ||  algo: 82s (1 min 22 sec)
-		32 cores: readFile: 0,25s ||  algo: 63s (1 min 3 sec)
-		64 cores: readFile: 0,5s  ||  algo: 106s (1 min 46 sec)
+		1 cores:   readFile: 0,8s  ||  algo: 902s (15 min 2 sec)
+		2 cores:   readFile: 0,6s  ||  algo: 625s (10 min 25 sec)
+		4 cores:   readFile: 0,2s  ||  algo: 358s (5 min 58 sec)
+		8 cores:   readFile: 0,1s  ||  algo: 165s (2 min 45 sec)
+		16 cores:  readFile: 0,2s  ||  algo: 82s (1 min 22 sec)
+		32 cores:  readFile: 0,3s  ||  algo: 63s (1 min 3 sec)
+		64 cores:  readFile: 0,5s  ||  algo: 106s (1 min 46 sec)
+		128 cores: readFile: XXXXXXs  ||  algo: XXXXXXs
 	bigDS
-		2 cores:  readFile: 2,11s ||  algo: 1825s (30 min 25 sec)
-		4 cores:  readFile: 0,99s ||  algo: 1064s (17 min 44 sec)
-		8 cores:  readFile: 0,22s ||  algo: 233s (3 min 53 sec)
-		16 cores: readFile: 0,82s ||  algo: 202s (3 min 22 sec)
-		32 cores: readFile: 0,7s  ||  algo: 170s (2 min 50 sec)
-		64 cores: readFile: 1s    ||  algo: 72s (1 min 12 sec)
+		1 cores:   readFile: 2,0s  ||  algo: 1592s (26 min 32 sec)
+		2 cores:   readFile: 2,1s  ||  algo: 1825s (30 min 25 sec)
+		4 cores:   readFile: 1,0s  ||  algo: 1064s (17 min 44 sec)
+		8 cores:   readFile: 0,2s  ||  algo: 233s (3 min 53 sec)
+		16 cores:  readFile: 0,8s  ||  algo: 202s (3 min 22 sec)
+		32 cores:  readFile: 0,7s  ||  algo: 170s (2 min 50 sec)
+		64 cores:  readFile: 1,0s  ||  algo: 72s (1 min 12 sec)
+		128 cores: readFile: XXXXXXs  ||  algo: XXXXXXs
 		
