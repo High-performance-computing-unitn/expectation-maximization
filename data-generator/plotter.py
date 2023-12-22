@@ -21,7 +21,7 @@ parallel_2_algo_MDS = []
 parallel_2_file_BDS = []
 parallel_2_algo_BDS = []
 
-parallel_1_file_HD = [0.08, 0.3, 0.03]
+parallel_1_file_HD = [0.08, 0.03, 0.03]
 parallel_1_algo_HD = [304, 166, 83]
 
 parallel_2_file_HD = [0.02, 0.01, 0.007]
@@ -82,7 +82,7 @@ with open('../results_formatted.txt') as f:
 
 x_ticks = [1, 2, 4, 8, 16, 32, 64]
 x_values = [2, 4, 8, 16, 32, 64]
-x_ticks_HD[2, 4, 8]
+x_ticks_HD = [2, 4, 8]
 
 # SMALL DATASET PLOT
 
