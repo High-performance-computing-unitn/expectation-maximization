@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#PBS -l select=2:ncpus=1:mem=1gb
+#PBS -l select=1:ncpus=2
 
-#PBS -l walltime=00:30:00
+#PBS -l walltime=03:00:00
 
 #PBS -q short_cpuQ
 
@@ -46,6 +46,6 @@ echo "---end---"
 # echo "execution with 64 cores"
 
 # # arguments are                     executable                                  N    D K iter filepath
-# mpiexec -n 64 expectation-maximization/parallel-first-implementation/parallelRun 4000 8 4 200 "expectation-maximization/data-generator/N4000_K4_D8.csv"
+# mpiexec -n 80 expectation-maximization/parallel-first-implementation/parallelRun 4000 8 4 200 "expectation-maximization/data-generator/N4000_K4_D8.csv"
 
 # echo "---end---"
