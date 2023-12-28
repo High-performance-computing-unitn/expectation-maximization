@@ -2,7 +2,7 @@
 
 #PBS -l select=1:ncpus=2
 
-#PBS -l walltime=03:00:00
+#PBS -l walltime=02:00:00
 
 #PBS -q short_cpuQ
 

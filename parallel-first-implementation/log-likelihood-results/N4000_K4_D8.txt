@@ -34,7 +34,8 @@ With 32 processes
 
 --------------
 Execution for N: 4000, K: 4, D: 8
-With 16 processes-56387.135078
+With 16 processes
+-56387.135078
 211715.662237
 138202.895970
 153769.951165
@@ -48,7 +49,8 @@ With 16 processes-56387.135078
 
 --------------
 Execution for N: 4000, K: 4, D: 8
-With 8 processes-71629.974272
+With 8 processes
+-71629.974272
 126703.536809
 152495.669807
 153144.074157
@@ -62,44 +64,15 @@ With 8 processes-71629.974272
 
 --------------
 Execution for N: 4000, K: 4, D: 8
-With 4 processes-57302.970165
-inf
--inf
--inf
--inf
--inf
--inf
--inf
--inf
-
-
---------------
-Execution for N: 4000, K: 4, D: 8
-With 4 processes-57788.702354
-333987.179876
-inf
--inf
--inf
--inf
--inf
--inf
--inf
--inf
-
-
---------------
-Execution for N: 4000, K: 4, D: 8
-With 2 processes-58184.990787
-inf
--inf
--inf
--inf
--inf
--inf
--inf
--inf
-
-
---------------
-Execution for N: 4000, K: 4, D: 8
-With 2 processes
+With 4 processes
+-70185.529088
+134806.032513
+60770.338696
+148097.423868
+153712.299707
+153712.299707
+153712.299707
+153712.299707
+153712.299707
+153712.299707
+153712.299707
