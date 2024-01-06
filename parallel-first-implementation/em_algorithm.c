@@ -167,17 +167,17 @@ void em_parallel(int n_iter, double *X, double *mean, double *cov, double *weigh
     MPI_Allreduce(&local_log_l, &log_l, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
     // process 0 opens the file and store the first value
-    FILE *log_file;
-    if (my_rank == 0)
-    {
-        log_file = fopen(log_filepath, "a");
-        if (log_file == NULL)
-        {
-            printf("Error opening the log likelihood file!");
-            exit(1);
-        }
-        fprintf(log_file, "%f\n", log_l);
-    }
+    // FILE *log_file;
+    // if (my_rank == 0)
+    // {
+    //     log_file = fopen(log_filepath, "a");
+    //     if (log_file == NULL)
+    //     {
+    //         printf("Error opening the log likelihood file!");
+    //         exit(1);
+    //     }
+    //     fprintf(log_file, "%f\n", log_l);
+    // }
 
     for (int i = 0; i < n_iter; i++)
     {
@@ -193,8 +193,8 @@ void em_parallel(int n_iter, double *X, double *mean, double *cov, double *weigh
         MPI_Allreduce(&local_log_l, &log_l_next, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
         // process 0 stores the result
-        if (my_rank == 0)
-            fprintf(log_file, "%f\n", log_l_next);
+        // if (my_rank == 0)
+        //     fprintf(log_file, "%f\n", log_l_next);
 
         // check the value of log likelihood and if it is the same reduce patience, if patience is 0 algorithm has converged
         if (roundf(log_l) == roundf(log_l_next))
@@ -208,8 +208,8 @@ void em_parallel(int n_iter, double *X, double *mean, double *cov, double *weigh
     }
     free(local_examples);
 
-    if (my_rank == 0)
-        fclose(log_file);
+    // if (my_rank == 0)
+    //     fclose(log_file);
 
     // gather p_val from the processes
     MPI_Gatherv(local_p_val, p_count[my_rank], MPI_DOUBLE, p_val, p_count, p_displ, MPI_DOUBLE, 0, MPI_COMM_WORLD);
