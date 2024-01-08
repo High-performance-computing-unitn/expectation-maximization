@@ -249,22 +249,6 @@ print(parallel_2_B_scatter_excl)
 print(parallel_2_B_scatter_excl_speedup)
 print(parallel_2_B_scatter_excl_efficiency)
 
-#Parallel 1 high dim dataset data
-parallel_1_6D = [304, 166, 83, 42, 20, 19]
-parallel_1_8D = [4347, 2032, 1476, 705, 415, 114]
-
-#Parallel 1 high dim dataset data log
-parallel_1_6D_l = [math.log(x) for x in parallel_1_6D]
-parallel_1_8D_l = [math.log(x) for x in parallel_1_8D]
-
-#Parallel 2 high dim dataset data
-parallel_2_6D = [17, 15, 12, 7, 4, 8]
-parallel_2_8D = [4.6, 4.4, 2.3, 2.4, 0.7, 1]
-
-#Parallel 2 high dim dataset data log
-parallel_2_6D_l = [math.log(x) for x in parallel_2_6D]
-parallel_2_8D_l = [math.log(x) for x in parallel_2_8D]
-
 #Parallel 1 small dataset data log
 parallel_1_S_pack_l = [math.log(x) for x in parallel_1_S_pack]
 parallel_1_S_pack_excl_l = [math.log(x) for x in parallel_1_S_pack_excl]
@@ -301,6 +285,22 @@ parallel_2_B_pack_l = [math.log(x) for x in parallel_2_B_pack]
 parallel_2_B_pack_excl_l = [math.log(x) for x in parallel_2_B_pack_excl]
 parallel_2_B_scatter_l = [math.log(x) for x in parallel_2_B_scatter]
 parallel_2_B_scatter_excl_l = [math.log(x) for x in parallel_2_B_scatter_excl]
+
+#Parallel 1 high dim dataset data
+parallel_1_6D = [304, 166, 83, 42, 20, 19]
+parallel_1_8D = [4347, 2032, 1476, 705, 415, 114]
+
+#Parallel 1 high dim dataset data log
+parallel_1_6D_l = [math.log(x) for x in parallel_1_6D]
+parallel_1_8D_l = [math.log(x) for x in parallel_1_8D]
+
+#Parallel 2 high dim dataset data
+parallel_2_6D = [17, 15, 12, 7, 4, 8]
+parallel_2_8D = [4.6, 4.4, 2.3, 2.4, 0.7, 1]
+
+#Parallel 2 high dim dataset data log
+parallel_2_6D_l = [math.log(x) for x in parallel_2_6D]
+parallel_2_8D_l = [math.log(x) for x in parallel_2_8D]
 
 ########################
 # TIME PLOT PARALLEL 1 #
