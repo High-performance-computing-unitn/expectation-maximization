@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#PBS -l select=4:ncpus=16:mem=1gb -l place=scatter
+#PBS -l select=4:ncpus=16:mpiprocs=64 -l place=scatter:excl
 
 #PBS -l walltime=03:00:00
 
@@ -8,47 +8,47 @@
 
 module load mpich-3.2
 
-# echo "execution with 1 core"
+echo "execution with 1 core"
 
-# # arguments are                     executable                                  N      D K iter filepath
-# mpiexec -n 1 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
+# arguments are                     executable                                  N      D K iter filepath
+mpiexec -n 1 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
 
-# echo "---end---"
+echo "---end---"
 
-# echo "execution with 2 cores"
+echo "execution with 2 cores"
 
-# # arguments are                     executable                                  N      D K iter filepath
-# mpiexec -n 2 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
+# arguments are                     executable                                  N      D K iter filepath
+mpiexec -n 2 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
 
-# echo "---end---"
+echo "---end---"
 
-# echo "execution with 4 cores"
+echo "execution with 4 cores"
 
-# # arguments are                     executable                                  N   D K iter filepath
-# mpiexec -n 4 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
+# arguments are                     executable                                  N   D K iter filepath
+mpiexec -n 4 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
 
-# echo "---end---"
+echo "---end---"
 
-# echo "execution with 8 cores"
+echo "execution with 8 cores"
 
-# # arguments are                     executable                                  N   D K iter filepath
-# mpiexec -n 8 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
+# arguments are                     executable                                  N   D K iter filepath
+mpiexec -n 8 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
 
-# echo "---end---"
+echo "---end---"
 
-# echo "execution with 16 cores"
+echo "execution with 16 cores"
 
-# # arguments are                     executable                                  N   D K iter filepath
-# mpiexec -n 16 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
+# arguments are                     executable                                  N   D K iter filepath
+mpiexec -n 16 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
 
-# echo "---end---"
+echo "---end---"
 
-# echo "execution with 32 cores"
+echo "execution with 32 cores"
 
-# # arguments are                     executable                                  N   D K iter filepath
-# mpiexec -n 32 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
+# arguments are                     executable                                  N   D K iter filepath
+mpiexec -n 32 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
 
-# echo "---end---"
+echo "---end---"
 
 echo "execution with 64 cores"
 
@@ -56,10 +56,3 @@ echo "execution with 64 cores"
 mpiexec -n 64 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
 
 echo "---end---"
-
-# echo "execution with 80 cores"
-
-# # arguments are                     executable                                  N   D K iter filepath
-# mpiexec -n 80 expectation-maximization/parallel-second-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
-
-# echo "---end---"

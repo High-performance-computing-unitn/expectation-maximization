@@ -56,10 +56,3 @@ echo "execution with 64 cores"
 mpiexec -n 64 expectation-maximization/parallel-first-implementation/parallelRun 250000 4 5 200 "expectation-maximization/data-generator/N250000_K5_D4.csv"
 
 echo "---end---"
-
-# echo "execution with 80 cores"
-
-# # arguments are                     executable                                  N      D K iter filepath
-# mpiexec -n 80 expectation-maximization/parallel-first-implementation/parallelRun 250000 4 5 200 "expectation-maximization/data-generator/N250000_K5_D4.csv"
-
-# echo "---end---"

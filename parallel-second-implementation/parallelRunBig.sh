@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#PBS -l select=4:ncpus=16:mem=1gb -l place=pack:excl
+#PBS -l select=4:ncpus=16:mpiprocs=64 -l place=scatter:excl
 
 #PBS -l walltime=04:00:00
 
@@ -56,10 +56,3 @@ echo "execution with 64 cores"
 mpiexec -n 64 expectation-maximization/parallel-second-implementation/parallelRun 1250000 4 5 200 "expectation-maximization/data-generator/N1250000_K5_D4.csv"
 
 echo "---end---"
-
-# echo "execution with 80 cores"
-
-# # arguments are                     executable                                    N       D K iter filepath
-# mpiexec -n 80 expectation-maximization/parallel-second-implementation/parallelRun 1250000 4 5 200 "expectation-maximization/data-generator/N1250000_K5_D4.csv"
-
-# echo "---end---"
