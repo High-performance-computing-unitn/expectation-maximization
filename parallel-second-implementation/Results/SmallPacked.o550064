@@ -1,6 +1,6 @@
 execution with 1 core
 Time to read file: 0.392769 seconds with: 250000 samples
-Algorithm completed in: 666.021432 seconds with: 250000 samples
+Algorithm completed in: 527.021432 seconds with: 250000 samples
 P values produced by the algorithm
 ---end---
 execution with 2 cores

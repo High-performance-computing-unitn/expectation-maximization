@@ -25,7 +25,7 @@ P values produced by the algorithm
 ---end---
 execution with 32 cores
 Time to read file: 0.557246 seconds with: 1250000 samples
-Algorithm completed in: 96.019754 seconds with: 1250000 samples
+Algorithm completed in: 113.019754 seconds with: 1250000 samples
 P values produced by the algorithm
 ---end---
 execution with 64 cores
