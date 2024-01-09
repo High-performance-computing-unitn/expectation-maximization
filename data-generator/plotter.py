@@ -1,5 +1,6 @@
 from matplotlib import pyplot as plt
 import math
+from statistics import mean
 
 x_values = [1, 2, 4, 8, 16, 32, 64]
 x_values_HD = [2, 4, 8, 16, 32, 64]
@@ -301,6 +302,130 @@ parallel_2_8D = [4.6, 4.4, 2.3, 2.4, 0.7, 1]
 #Parallel 2 high dim dataset data log
 parallel_2_6D_l = [math.log(x) for x in parallel_2_6D]
 parallel_2_8D_l = [math.log(x) for x in parallel_2_8D]
+
+
+#Parallel 1 small dataset data
+parallel_1_S_pack_file = [0.478, 0.266, 0.285, 0.316, 0.380, 0.461, 0.523] 
+parallel_1_S_pack_excl_file = [0.216, 0.215, 0.217, 0.226, 0.224, 0.253, 0.277]
+parallel_1_S_scatter_file = [0.813, 0.315, 0.266, 0.48, 0.298, 0.69, 0.263] 
+parallel_1_S_scatter_excl_file = [0.426, 0.261, 0.259, 0.268, 0.273, 0.275, 0.298] 
+
+parallel_1_S_file_mean = [
+    mean(values)
+    for values in zip(
+        parallel_1_S_pack_file,
+        parallel_1_S_pack_excl_file,
+        parallel_1_S_scatter_file,
+        parallel_1_S_scatter_excl_file
+    )
+]
+
+#Parallel 1 medium dataset data
+parallel_1_M_pack_file = [0.847, 0.534, 0.529, 0.525, 0.556, 0.569, 0.624] 
+parallel_1_M_pack_excl_file = [0.524, 0.521, 0.522, 0.533, 0.566, 0.575, 0.622] 
+parallel_1_M_scatter_file = [0.904, 1.136, 0.681, 0.648, 0.672, 0.683, 0.716] 
+parallel_1_M_scatter_excl_file = [0.99, 0.641, 0.953, 0.536, 0.53, 0.549, 0.568] 
+
+parallel_1_M_file_mean = [
+    mean(values)
+    for values in zip(
+        parallel_1_M_pack_file,
+        parallel_1_M_pack_excl_file,
+        parallel_1_M_scatter_file,
+        parallel_1_M_scatter_excl_file
+    )
+]
+
+#Parallel 1 big dataset data
+parallel_1_B_pack_file = [1.613, 1.068, 1.06, 1.061, 1.142, 1.152, 1.405] 
+parallel_1_B_pack_excl_file = [1.063, 1.059, 1.075, 1.071, 1.121, 1.157, 1.461]
+parallel_1_B_scatter_file = [1.795, 1.099, 1.950, 1.368, 1.415, 1.613, 2.595] 
+parallel_1_B_scatter_excl_file = [1.772, 1.288, 1.286, 1.291, 1.313, 1.422, 1.837] 
+
+parallel_1_B_file_mean = [
+    mean(values)
+    for values in zip(
+        parallel_1_B_pack_file,
+        parallel_1_B_pack_excl_file,
+        parallel_1_B_scatter_file,
+        parallel_1_B_scatter_excl_file
+    )
+]
+
+    
+#Parallel 2 small dataset data
+parallel_2_S_pack_file = [0.392, 0.12, 0.072, 0.05, 0.067, 0.11, 0.212] 
+parallel_2_S_pack_excl_file = [0.218, 0.117, 0.068, 0.049, 0.067, 0.109, 0.215]
+parallel_2_S_scatter_file = [0.436, 0.127, 0.068, 0.043, 0.031, 0.045, 0.086]
+parallel_2_S_scatter_excl_file = [0.277, 0.370, 0.291, 0.065, 0.084, 0.145, 0.28]
+
+parallel_2_S_file_mean = [
+    mean(values)
+    for values in zip(
+        parallel_2_S_pack_file,
+        parallel_2_S_pack_excl_file,
+        parallel_2_S_scatter_file,
+        parallel_2_S_scatter_excl_file
+    )
+]
+
+#Parallel 2 medium dataset data
+parallel_2_M_pack_file = [0.859, 0.286, 0.174, 0.103, 0.109, 0.168, 0.329]
+parallel_2_M_pack_excl_file = [0.529, 0.301, 0.494, 0.170, 0.218, 0.383, 0.755]
+parallel_2_M_scatter_file = [1.048, 0.313, 0.164, 0.113, 0.074, 0.591, 0.352]
+parallel_2_M_scatter_excl_file = [0.890, 0.872, 0.680, 0.123, 0.302, 0.089, 0.597]
+
+parallel_2_M_file_mean = [
+    mean(values)
+    for values in zip(
+        parallel_2_M_pack_file,
+        parallel_2_M_pack_excl_file,
+        parallel_2_M_scatter_file,
+        parallel_2_M_scatter_excl_file
+    )
+]
+
+#Parallel 2 big dataset data
+parallel_2_B_pack_file = [1.076, 0.569, 0.332, 0.246, 0.315, 0.539, 1.042] 
+parallel_2_B_pack_excl_file = [1.663, 0.575, 0.349, 0.237, 0.319, 0.557, 1.082] 
+parallel_2_B_scatter_file = [1.533, 0.624, 0.351, 0.213, 0.181, 0.291, 0.554]
+parallel_2_B_scatter_excl_file = [1.280, 0.681, 0.377, 0.253, 0.169, 0.120, 0.347]
+
+parallel_2_B_file_mean = [
+    mean(values)
+    for values in zip(
+        parallel_2_B_pack_file,
+        parallel_2_B_pack_excl_file,
+        parallel_2_B_scatter_file,
+        parallel_2_B_scatter_excl_file
+    )
+]
+ 
+#############
+# FILE PLOT #
+#############
+
+# plt.rcParams["figure.figsize"] = [8, 6]
+# plt.rcParams["figure.autolayout"] = True
+
+# fig, axs = plt.subplots(1, 1)
+
+plt.plot(x_values, parallel_1_S_file_mean, label = "P1 small dataset mean", color = 'blue', linewidth = 0.8)
+plt.plot(x_values, parallel_1_M_file_mean, label = "P1 medium dataset mean", color = 'purple', linewidth = 0.8)
+plt.plot(x_values, parallel_1_B_file_mean, label = "P1 big dataset mean", color = 'cyan', linewidth = 0.8)
+
+plt.plot(x_values, parallel_2_S_file_mean, label = "P2 small dataset mean", color = 'red', linewidth = 0.8)
+plt.plot(x_values, parallel_2_M_file_mean, label = "P2 medium dataset mean", color = 'brown', linewidth = 0.8)
+plt.plot(x_values, parallel_2_B_file_mean, label = "P2 big dataset mean", color = 'green', linewidth = 0.8)
+
+plt.xlabel('cores') 
+plt.ylabel('seconds') 
+
+plt.legend()
+
+plt.title('Means of file reading time for different configurations')
+plt.show() 
+
 
 ########################
 # TIME PLOT PARALLEL 1 #
