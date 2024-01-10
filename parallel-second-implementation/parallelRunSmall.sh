@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#PBS -l select=32:ncpus=2:mpiprocs=64 -l place=scatter
+#PBS -l select=8:ncpus=8:mpiprocs=64 -l place=scatter:excl
 
-#PBS -l walltime=01:00:00
+#PBS -l walltime=03:00:00
 
 #PBS -q short_cpuQ
 
