@@ -128,11 +128,11 @@ void m_step(double *X, double *mean, double *cov, double *weights, double *p_val
 
 void parallel_sum_pij(double *local_p_val, double *sum_pi, int row_per_process, int K)
 {
-    // each process computes sum pi
+    // each process computes sum of probabilities
     double *local_sum_pi = calloc(K, sizeof(double));
     calc_sum_pij(local_p_val, local_sum_pi, K, row_per_process);
 
-    // collect sum from all processes and distribute result
+    // collect sum from all processes
     MPI_Reduce(local_sum_pi, sum_pi, K, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     free(local_sum_pi);
 }
@@ -149,7 +149,7 @@ void parallel_mean(double *local_examples, double *local_p_val, double *sum_pi,
     MPI_Reduce(local_mean_num, total_mean_num, K * D, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     free(local_mean_num);
 
-    // update mean values
+    // process 0 update mean values
     if (my_rank == 0)
         m_step_mean(mean, total_mean_num, sum_pi, K, D);
     free(total_mean_num);
@@ -161,6 +161,7 @@ void parallel_mean(double *local_examples, double *local_p_val, double *sum_pi,
 void parallel_cov(double *local_examples, double *local_p_val, double *mean, double *sum_pi,
                   double *cov, int my_rank, int row_per_process, int K, int D)
 {
+    // each process compute the covariance numerator on its local examples
     double *local_cov_num = calloc(K * D * D, sizeof(double));
     calc_covariance_num(local_examples, mean, local_cov_num, local_p_val, K, row_per_process, D);
 
@@ -169,7 +170,7 @@ void parallel_cov(double *local_examples, double *local_p_val, double *mean, dou
     MPI_Reduce(local_cov_num, total_cov_num, K * D * D, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     free(local_cov_num);
 
-    // update cov values
+    // process 0 update cov values
     if (my_rank == 0)
         m_step_covariance(cov, total_cov_num, sum_pi, K, D);
     free(total_cov_num);
@@ -178,6 +179,9 @@ void parallel_cov(double *local_examples, double *local_p_val, double *mean, dou
     MPI_Bcast(cov, K * D * D, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
+/*
+    Function that updates the weights
+*/
 void parallel_weights(double *sum_pi, double *weights, int my_rank, int K)
 {
     // process 0 updates weights
@@ -188,6 +192,9 @@ void parallel_weights(double *sum_pi, double *weights, int my_rank, int K)
     MPI_Bcast(weights, K, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
+/*
+    Function that computes the M STEP of the algorithm
+*/
 void m_step_parallel(double *local_p_val, double *local_examples, double *mean,
                      double *cov, double *weights, int my_rank, int row_per_process, int K, int D)
 {

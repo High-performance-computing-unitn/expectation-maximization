@@ -17,7 +17,7 @@ void calc_sum_pij(double *p_val, double *res, int K, int N)
 
         if (s == 0)
         {
-            s = 1e-52;
+            s = 1e-52; // if the sum is zero initialize it as a small value
         }
         res[k] = s;
     }
@@ -108,6 +108,7 @@ void m_step_weights(double *sum_pij, double *weights, int K)
 */
 void m_step(double *X, double *mean, double *cov, double *weights, double *p_val, int K, int N, int D)
 {
+    // compute the sum of probabilities
     double *sum_pij = (double *)calloc(K, sizeof(double));
     calc_sum_pij(p_val, sum_pij, K, N);
 
@@ -132,7 +133,7 @@ void parallel_sum_pij(double *local_p_val, double *sum_pi, int row_per_process, 
     double *local_sum_pi = calloc(K, sizeof(double));
     calc_sum_pij(local_p_val, local_sum_pi, K, row_per_process);
 
-    // collect sum from all processes and distribute result
+    // collect sum from all processes
     MPI_Reduce(local_sum_pi, sum_pi, K, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     free(local_sum_pi);
 }
@@ -161,6 +162,7 @@ void parallel_mean(double *local_examples, double *local_p_val, double *sum_pi,
 void parallel_cov(double *local_examples, double *local_p_val, double *mean, double *sum_pi,
                   double *cov, int my_rank, int row_per_process, int K, int D)
 {
+    // each process computes covariance numerator of its local examples
     double *local_cov_num = calloc(K * D * D, sizeof(double));
     calc_covariance_num(local_examples, mean, local_cov_num, local_p_val, K, row_per_process, D);
 

@@ -5,27 +5,33 @@
 #include <mpi.h>
 
 /*
- * Code for matrix inverse taken from
- * https://www.geeksforgeeks.org/adjoint-inverse-matrix/
+ * Code for parallel determinant is taken from
+ * https://matematicamente.it/forum/viewtopic.php?f=15&t=145130
  */
 
+/*
+    Function that returns the absolute value 
+*/
 double d_abs(double d)
 {
     return (d < 0.) ? -d : d;
 }
 
-double factorize(double *matrix, int n)
+/*
+    Function that factorizes the matrix
+*/
+double factorize(double *matrix, int size)
 {
     double parity = 1.;
 
-    for (int k = 0; k < n - 1; k++)
+    for (int k = 0; k < size - 1; k++) // iterate over the size
     {
-        double max = d_abs(matrix[k * n + k]);
-        int index = k;
-        for (int i = k + 1; i < n; i++)
+        double max = d_abs(matrix[k * size + k]); // assign max value
+        int index = k; // assign current index
+        for (int i = k + 1; i < size; i++)
         {
-            double t = d_abs(matrix[i * n + k]);
-            if (t > max)
+            double t = d_abs(matrix[i * size + k]);
+            if (t > max) // if new max is found update values
             {
                 max = t;
                 index = i;
@@ -37,56 +43,62 @@ double factorize(double *matrix, int n)
 
         if (index != k)
         {
-            parity *= -1;
-#pragma omp parallel for num_threads(2)
-            for (int i = 0; i < n; i++)
+            parity *= -1; // swap parity sign
+            // run parallel for with 2 threads to swap the matrix values
+            #pragma omp parallel for num_threads(2) 
+            for (int i = 0; i < size; i++)
             {
-                double t = matrix[k * n + i];
-                matrix[k * n + i] = matrix[index * n + i];
-                matrix[index * n + i] = t;
+                double t = matrix[k * size + i];
+                matrix[k * size + i] = matrix[index * size + i];
+                matrix[index * size + i] = t;
             }
         }
 
-        double pe = matrix[k * n + k];
-#pragma omp parallel for num_threads(2)
-        for (int i = k + 1; i < n; i++)
-            matrix[i * n + k] /= pe;
+        double pe = matrix[k * size + k];
+        // run parallel for with 2 threads to update the matrix values
+        #pragma omp parallel for num_threads(2)
+        for (int i = k + 1; i < size; i++)
+            matrix[i * size + k] /= pe;
 
-#pragma omp parallel for num_threads(2)
-        for (int i = k + 1; i < n; i++)
+        // run parallel for with 2 threads to update the matrix values
+        #pragma omp parallel for num_threads(2)
+        for (int i = k + 1; i < size; i++)
         {
-            double matrix_i_k = matrix[i * n + k];
-            for (int j = k + 1; j < n; j++)
-                matrix[i * n + j] -= matrix_i_k * matrix[k * n + j];
+            double matrix_i_k = matrix[i * size + k];
+            for (int j = k + 1; j < size; j++)
+                matrix[i * size + j] -= matrix_i_k * matrix[k * size + j];
         }
     }
 
     return parity;
 }
 
-double determinant(double *m, int n)
+/*
+    Function that computes the parallel determinant
+*/
+double determinant(double *m, int size)
 {
     // if matrix is grater than 3x3 compute as follows
-    if (n > 3)
+    if (size > 3)
     {
-        int n2 = n * n;
+        int n2 = size * size;
         double *matrix = (double *)calloc(n2, sizeof(double));
         if (matrix)
         {
-// copy the input matrix with threads to avoid changing its values
-#pragma omp parallel for num_threads(2)
+            // copy the input matrix with threads to avoid changing its values
+            #pragma omp parallel for num_threads(2)
             for (int i = 0; i < n2; i++)
                 matrix[i] = m[i];
 
-            double det = factorize(matrix, n); // factorize matrix
+            double det = factorize(matrix, size); // factorize matrix
 
             if (det != 0)
             {
-// if the determinant is not zero each thread compute its det and then multiply the result of each thread
-#pragma omp parallel for reduction(* : det) num_threads(2)
-                for (int i = 0; i < n; i++)
+                // if the determinant is not zero each thread compute its det and then multiply the result of each thread
+                #pragma omp parallel for reduction(* : det) num_threads(2)
+                for (int i = 0; i < size; i++)
                 {
-                    int ind = i * n + i;
+                    int ind = i * size + i;
                     double value = matrix[ind];
                     det *= value;
                 }
@@ -97,15 +109,15 @@ double determinant(double *m, int n)
         else
             return 0.;
     }
-    else if (n == 3) // if matrix is less then or equal to 3x3 in size compute determinant by hand
+    else if (size == 3) // if matrix is less then or equal to 3x3 in size compute determinant "by hand"
     {
         return (m[0] * (m[4] * m[8] - m[5] * m[7]) - m[1] * (m[3] * m[8] - m[5] * m[6]) + m[2] * (m[3] * m[7] - m[4] * m[6]));
     }
-    else if (n == 2)
+    else if (size == 2)
     {
         return (m[0] * m[3] - m[1] * m[2]);
     }
-    else if (n == 1)
+    else if (size == 1)
     {
         return m[0];
     }
@@ -113,6 +125,9 @@ double determinant(double *m, int n)
         return 0.;
 }
 
+/*
+    Function that computes the cofactor of the matrix
+*/
 void getCofactor(double *A, double *temp, int p, int q, int n)
 {
     int i = 0, j = 0;
@@ -138,6 +153,9 @@ void getCofactor(double *A, double *temp, int p, int q, int n)
     }
 }
 
+/*
+    Function that creates an identity matrix (each element is zero outside the main diagonal and 1 in the diagonal)
+*/
 void generate_identity(double *inverse, int size)
 {
     for (int i = 0; i < size; i++)
@@ -152,14 +170,19 @@ void generate_identity(double *inverse, int size)
     }
 }
 
+/*
+    Function that computes the inverse of the matrix
+*/
 void inverse(double *mat, double *inv, int size)
 {
     double *input_matrix = calloc(size * size, sizeof(double));
 
+    // copy the input matrix
     for (int i = 0; i < size; i++)
         for (int j = 0; j < size; j++)
             input_matrix[i * size + j] = mat[i * size + j];
     
+    // initialize the matrix as the identity matrix
     generate_identity(inv, size);
 
     for (int i = 0; i < size; i++)
@@ -187,6 +210,7 @@ void inverse(double *mat, double *inv, int size)
                 }
             }
         }
+        // divide each element of the col by the scale
         double scale = input_matrix[i * size + i];
         for (int col = 0; col < size; col++)
         {
@@ -195,11 +219,12 @@ void inverse(double *mat, double *inv, int size)
         }
         if (i < size - 1)
         {
-            for (int row = i + 1; row < size; row++)
+            for (int row = i + 1; row < size; row++) // iterate over rows
             {
                 double factor = input_matrix[row * size + i];
-                for (int col = 0; col < size; col++)
-                {
+                for (int col = 0; col < size; col++) // iterate over columns
+                {   
+                    // each element is subtracted the factor times the current value
                     input_matrix[row * size + col] -= factor * input_matrix[i * size + col];
                     inv[row * size + col] -= factor * inv[i * size + col];
                 }
@@ -207,15 +232,16 @@ void inverse(double *mat, double *inv, int size)
         }
     }
 
-    for (int zeroing_col = size - 1; zeroing_col >= 1; zeroing_col--)
+    // subtract again from each element the new factor times the zeroing position
+    for (int z_col = size - 1; z_col >= 1; z_col--)
     {
-        for (int row = zeroing_col - 1; row >= 0; row--)
+        for (int row = z_col - 1; row >= 0; row--)
         {
-            double factor = input_matrix[row * size + zeroing_col];
+            double factor = input_matrix[row * size + z_col];
             for (int col = 0; col < size; col++)
             {
-                input_matrix[row * size + col] -= factor * input_matrix[zeroing_col * size + col];
-                inv[row * size + col] -= factor * inv[zeroing_col * size + col];
+                input_matrix[row * size + col] -= factor * input_matrix[z_col * size + col];
+                inv[row * size + col] -= factor * inv[z_col * size + col];
             }
         }
     }
@@ -238,8 +264,7 @@ void matmul(double *mat, double *vec, double *res, int D)
 }
 
 /*
-    Function that calculates the dot product between two vectors
-    and returns the results.
+    Function that calculates the dot product between two vectors and returns the results.
 */
 double dotProduct(double *a, double *b, int D)
 {
@@ -264,8 +289,8 @@ void standardize(double *data, int row_per_process, int world_size, int D)
         local_mean[j] /= row_per_process;
     }
 
+    // compute the sum of means and then each process computes the global mean since the matrix is distributed at the beginning
     double *global_mean = calloc(D, sizeof(double));
-
     MPI_Allreduce(local_mean, global_mean, D, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
     for (int i = 0; i < D; i++)
@@ -281,8 +306,8 @@ void standardize(double *data, int row_per_process, int world_size, int D)
         local_stdDev[j] = sqrt(local_stdDev[j] / (row_per_process - 1));
     }
 
+    // compute the sum of means and then each process computes the global mean since the matrix is distributed at the beginning
     double *global_stdDev = calloc(D, sizeof(double));
-
     MPI_Allreduce(local_stdDev, global_stdDev, D, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
     for (int i = 0; i < D; i++)

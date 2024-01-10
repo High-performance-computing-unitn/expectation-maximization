@@ -21,6 +21,7 @@ char *strdup(const char *str)
 */
 void readFile(char *rows[MAX_LINES], int rank, int row_per_process, int comm_sz, char *FILE_PATH)
 {
+    // each process computes its starting and ending index
     int start_index = row_per_process * rank;
     int end_index = start_index + row_per_process - 1;
 
@@ -32,6 +33,7 @@ void readFile(char *rows[MAX_LINES], int rank, int row_per_process, int comm_sz,
         int count = 0;
         char line[MAX_ROW_LEN];
 
+        // last process reads all the remaining lines
         if(rank == comm_sz - 1){
             // get all the lines of the file
             while (fgets(line, MAX_ROW_LEN, file) != NULL)
@@ -71,6 +73,7 @@ void readFile(char *rows[MAX_LINES], int rank, int row_per_process, int comm_sz,
 void parallel_fill_matrix(double *mat, int N, int D, int rank, int row_per_process, int comm_sz, char *FILE_PATH)
 {
     char *rows[MAX_LINES];
+    // each process reads the file
     readFile(rows, rank, row_per_process, comm_sz, FILE_PATH);
 
     int col = 0;
@@ -83,7 +86,7 @@ void parallel_fill_matrix(double *mat, int N, int D, int rank, int row_per_proce
             if (ptr != delim)
             {
                 mat[row * D + col] = strtod(ptr, NULL); // convert element to double and store it in the matrix
-                ptr = strtok(NULL, delim);
+                ptr = strtok(NULL, delim); // update pointer to next element
                 col++;
             }
         }

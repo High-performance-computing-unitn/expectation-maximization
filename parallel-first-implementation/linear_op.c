@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
+
 /*
  * Code for matrix inverse taken from
  * https://www.geeksforgeeks.org/adjoint-inverse-matrix/

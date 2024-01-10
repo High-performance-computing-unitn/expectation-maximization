@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#PBS -l select=2:ncpus=1:mem=1gb -l place=scatter:excl
+#PBS -l select=16:ncpus=4:mpiprocs=64 -l place=scatter:excl
 
 #PBS -l walltime=03:00:00
 
@@ -8,26 +8,26 @@
 
 module load mpich-3.2
 
-echo "execution with 1 core"
+# echo "execution with 1 core"
 
-# arguments are                     executable                                  N   D K iter filepath
-mpiexec -n 1 expectation-maximization/parallel-first-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
+# # arguments are                     executable                                  N   D K iter filepath
+# mpiexec -n 1 expectation-maximization/parallel-first-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
 
-echo "---end---"
+# echo "---end---"
 
-echo "execution with 2 cores"
+# echo "execution with 2 cores"
 
-# arguments are                     executable                                  N   D K iter filepath
-mpiexec -n 2 expectation-maximization/parallel-first-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
+# # arguments are                     executable                                  N   D K iter filepath
+# mpiexec -n 2 expectation-maximization/parallel-first-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
 
-echo "---end---"
+# echo "---end---"
 
-echo "execution with 4 cores"
+# echo "execution with 4 cores"
 
-# arguments are                     executable                                  N   D K iter filepath
-mpiexec -n 4 expectation-maximization/parallel-first-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
+# # arguments are                     executable                                  N   D K iter filepath
+# mpiexec -n 4 expectation-maximization/parallel-first-implementation/parallelRun 625000 4 5 200 "expectation-maximization/data-generator/N625000_K5_D4.csv"
 
-echo "---end---"
+# echo "---end---"
 
 echo "execution with 8 cores"
 

@@ -30,7 +30,7 @@ double gaussian(double *x, double *mean, double *cov, int D)
     free(x_u);
     free(x_u_inv);
 
-    // calculate the exponent
+    // calculate the exponents
     in_exp = exp(-0.5 * in_exp);
 
     double out_exp = 1. / sqrt(pow(2 * PI, D) * det);
@@ -39,7 +39,7 @@ double gaussian(double *x, double *mean, double *cov, int D)
 }
 
 /*
-    Function that resets the values of the covariance matrix if it becomes the singular.
+    Function that resets the values of the covariance matrix if it becomes singular.
 */
 void reset_cov(double *cov, int k, int D)
 {
@@ -54,7 +54,7 @@ void reset_cov(double *cov, int k, int D)
 }
 
 /*
-    Function that resets the values of the mean vector if the covariance matrix becomes the singular.
+    Function that resets the values of the mean vector if the covariance matrix becomes singular.
 */
 void reset_mean(double *mean, int k, int D)
 {
@@ -74,7 +74,7 @@ void e_step(double *X, double *mean, double *cov, double *weights, double *p_val
 
     for (int i = 0; i < N * D;) // iterate over the training examples
     {
-        double *row = (double *)calloc(D, sizeof(double));
+        double *row = (double *)calloc(D, sizeof(double)); // copy row
         for (int col = 0; col < D; col++)
             row[col] = X[i + col];
 
@@ -85,7 +85,7 @@ void e_step(double *X, double *mean, double *cov, double *weights, double *p_val
         {
             double *c = (double *)calloc(D * D, sizeof(double));
             double *m = (double *)calloc(D, sizeof(double));
-            get_cluster_mean_cov(mean, cov, m, c, j, D);
+            get_cluster_mean_cov(mean, cov, m, c, j, D); // copy mean and covariance
 
             double g = gaussian(row, m, c, D) * weights[j]; // calculate pdf
 
@@ -112,6 +112,7 @@ void e_step(double *X, double *mean, double *cov, double *weights, double *p_val
             double pij = gaussians[j] / p_x;
             p_val[p_val_ind + j] = pij;
         }
+        
         free(gaussians);
 
         p_val_ind += K;

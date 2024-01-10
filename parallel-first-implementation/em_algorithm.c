@@ -11,21 +11,7 @@
 #include "utils.h"
 
 /*
-   The function that iteratively run expectation and maximization steps
-   for n number of times.
-*/
-void em_train(int n_iter, double *X, double *mean, double *cov, double *weights, double *p_val, int K, int N, int D)
-{
-    for (int i = 0; i < n_iter; i++)
-    {
-        e_step(X, mean, cov, weights, p_val, K, N, D);
-        m_step(X, mean, cov, weights, p_val, K, N, D);
-    }
-}
-
-/*
-    The function that initializes the initial values of mean
-    in the range (0, 1).
+    The function that initializes the initial values of mean in the range (0, 1).
 */
 void init_mean(double *mean, int K, int D)
 {
@@ -75,6 +61,10 @@ void initialize(double *mean, double *cov, double *weights, int K, int D)
     init_weights(weights, K);
 }
 
+/*
+    Function that reads input data, standardize it and initialize cov, mean and weights 
+    before scattering all the values to the processes
+*/
 void initialize_parallel(double *X, double *mean, double *cov, double *weights, int my_rank, int N, int D, int K, char *FILE_PATH)
 {
     if (my_rank == 0)
@@ -88,6 +78,9 @@ void initialize_parallel(double *X, double *mean, double *cov, double *weights, 
     }
 }
 
+/*
+    Function that divide the matrix and distribute the values to all the processes    
+*/
 void divide_matrix_and_dist(double *X, double *local_examples, double *mean,
                             double *cov, double *weights, int *data_count, int *data_displ,
                             int my_rank, int N, int D, int K)
@@ -112,7 +105,7 @@ double log_likelihood(double *X, double *mean, double *cov, double *weights, int
 
     for (int i = 0; i < N * D;) // iterate over the training examples
     { 
-        double *row = (double *)calloc(D, sizeof(double));
+        double *row = (double *)calloc(D, sizeof(double)); // copy the row
         for (int col = 0; col < D; col++)
             row[col] = X[i + col];
 
@@ -121,7 +114,7 @@ double log_likelihood(double *X, double *mean, double *cov, double *weights, int
         {
             double *c = (double *)calloc(D * D, sizeof(double));
             double *m = (double *)calloc(D, sizeof(double));
-            get_cluster_mean_cov(mean, cov, m, c, j, D);
+            get_cluster_mean_cov(mean, cov, m, c, j, D); // copy mean and covariance
 
             double g = gaussian(row, m, c, D) * weights[j]; // compute pdf
             if (!(g == g)) // g is Nan - matrix is singular
@@ -148,6 +141,7 @@ void em_parallel(int n_iter, double *X, double *mean, double *cov, double *weigh
                  int *p_count, int *p_displ, int N, int D, int K, char *FILE_PATH)
 {
 
+    // initialize the values in a parallel fashion
     initialize_parallel(X, mean, cov, weights, my_rank, N, D, K, FILE_PATH);
 
     int row_per_process = data_count[my_rank] / D;
@@ -167,23 +161,25 @@ void em_parallel(int n_iter, double *X, double *mean, double *cov, double *weigh
     MPI_Allreduce(&local_log_l, &log_l, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
     // process 0 opens the file and store the first value
-    // FILE *log_file;
-    // if (my_rank == 0)
-    // {
-    //     log_file = fopen(log_filepath, "a");
-    //     if (log_file == NULL)
-    //     {
-    //         printf("Error opening the log likelihood file!");
-    //         exit(1);
-    //     }
-    //     fprintf(log_file, "%f\n", log_l);
-    // }
+    FILE *log_file;
+    if (my_rank == 0)
+    {
+        log_file = fopen(log_filepath, "a");
+        if (log_file == NULL)
+        {
+            printf("Error opening the log likelihood file!");
+            exit(1);
+        }
+        fprintf(log_file, "%f\n", log_l);
+    }
 
     for (int i = 0; i < n_iter; i++)
     {
         // E STEP
         // each process computes e_step on its local dataset
         e_step(local_examples, mean, cov, weights, local_p_val, K, row_per_process, D);
+        // M STEP PARALLEL
+        // each process computes the m_step and shares the values during its execution
         m_step_parallel(local_p_val, local_examples, mean, cov, weights, my_rank, row_per_process, K, D);
 
         // calc log likelihood
@@ -193,8 +189,8 @@ void em_parallel(int n_iter, double *X, double *mean, double *cov, double *weigh
         MPI_Allreduce(&local_log_l, &log_l_next, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
         // process 0 stores the result
-        // if (my_rank == 0)
-        //     fprintf(log_file, "%f\n", log_l_next);
+        if (my_rank == 0)
+            fprintf(log_file, "%f\n", log_l_next);
 
         // check the value of log likelihood and if it is the same reduce patience, if patience is 0 algorithm has converged
         if (roundf(log_l) == roundf(log_l_next))
@@ -208,10 +204,10 @@ void em_parallel(int n_iter, double *X, double *mean, double *cov, double *weigh
     }
     free(local_examples);
 
-    // if (my_rank == 0)
-    //     fclose(log_file);
+    if (my_rank == 0)
+        fclose(log_file);
 
-    // gather p_val from the processes
+    // gather p_val from the processes to print them
     MPI_Gatherv(local_p_val, p_count[my_rank], MPI_DOUBLE, p_val, p_count, p_displ, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     free(local_p_val);

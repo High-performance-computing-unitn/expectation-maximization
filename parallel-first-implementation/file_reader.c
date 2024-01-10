@@ -28,7 +28,7 @@ void readFile(char *rows[MAX_LINES], char *FILE_PATH)
         int rowN = 0;
         char line[MAX_ROW_LEN];
 
-        // get all the lines of the file
+        // get all the lines of the file and store them in the rows array
         while (fgets(line, MAX_ROW_LEN, file))
         {
             rows[rowN] = strdup(line);
@@ -61,7 +61,7 @@ void fill_matrix(double *mat, int N, int D, char *FILE_PATH)
             if (ptr != delim)
             {
                 mat[row * D + col] = strtof(ptr, NULL); // convert element to double and store it in the matrix
-                ptr = strtok(NULL, delim);
+                ptr = strtok(NULL, delim); // update pointer to next element
                 col++;
             }
         }
