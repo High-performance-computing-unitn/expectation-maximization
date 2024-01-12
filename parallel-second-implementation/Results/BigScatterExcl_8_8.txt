@@ -1,0 +1,20 @@
+execution with 8 cores
+Time to read file: 1.007579 seconds with: 1250000 samples
+Algorithm completed in: 365.068002 seconds with: 1250000 samples
+P values produced by the algorithm
+---end---
+execution with 16 cores
+Time to read file: 0.168781 seconds with: 1250000 samples
+Algorithm completed in: 189.415574 seconds with: 1250000 samples
+P values produced by the algorithm
+---end---
+execution with 32 cores
+Time to read file: 0.279124 seconds with: 1250000 samples
+Algorithm completed in: 218.949085 seconds with: 1250000 samples
+P values produced by the algorithm
+---end---
+execution with 64 cores
+Time to read file: 0.539536 seconds with: 1250000 samples
+Algorithm completed in: 461.924552 seconds with: 1250000 samples
+P values produced by the algorithm
+---end---

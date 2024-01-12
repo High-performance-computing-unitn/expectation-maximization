@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#PBS -l select=16:ncpus=4:mpiprocs=64 -l place=scatter
+#PBS -l select=32:ncpus=2:mpiprocs=64 -l place=scatter:excl
 
 #PBS -l walltime=04:00:00
 
