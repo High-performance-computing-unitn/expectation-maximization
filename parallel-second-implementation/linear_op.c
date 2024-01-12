@@ -95,7 +95,7 @@ double determinant(double *m, int size)
             if (det != 0)
             {
                 // if the determinant is not zero each thread compute its det and then multiply the result of each thread
-                #pragma omp parallel for reduction(* : det) num_threads(2)
+                #pragma omp parallel for reduction(* : det) num_threads(2) schedule(static, 1)
                 for (int i = 0; i < size; i++)
                 {
                     int ind = i * size + i;
